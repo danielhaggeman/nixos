@@ -19,8 +19,7 @@ log() {
 if [ ! -d "$REPO_DIR/.git" ]; then
     log "Creating new repository at $REPO_DIR..."
     mkdir -p "$REPO_DIR"
-    chown -R $USER_NAME:$USER_NAME "$REPO_DIR"
-
+    chown -R "$USER_NAME":"$(id -gn $USER_NAME)" "$REPO_DIR"
     sudo -u $USER_NAME git -C "$REPO_DIR" init
     sudo -u $USER_NAME git -C "$REPO_DIR" remote add origin "git@github.com:danielhaggeman/nixos.git"
 else
