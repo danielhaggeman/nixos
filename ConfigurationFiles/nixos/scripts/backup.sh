@@ -9,6 +9,7 @@ TARGET_DIR="$REPO_DIR/ConfigurationFiles"
 ROFI_DIR="$USER_HOME/.config/rofi"
 HYPR_DIR="$USER_HOME/.config/hypr"
 KITTY_DIR="$USER_HOME/.config/kitty"
+WAYBAR_DIR="$USER_HOME/.config/waybar"
 NIX_DIR="/etc/nixos"
 
 log() {
@@ -43,18 +44,14 @@ fi
 # ------------------------------------------------------------------------------
 log "Updating from GitHub..."
 
-# Try normal fast-forward pull
 if ! sudo -u $USER_NAME git -C "$REPO_DIR" pull --ff-only; then
     log "⚠️ Fast-forward not possible — attempting rebase..."
 
-    # Try rebase pull
     if ! sudo -u $USER_NAME git -C "$REPO_DIR" pull --rebase; then
         log "⚠️ Rebase failed — resetting to remote branch..."
 
-        # Determine branch
         BRANCH=$(sudo -u $USER_NAME git -C "$REPO_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
 
-        # Force reset
         sudo -u $USER_NAME git -C "$REPO_DIR" fetch origin
         sudo -u $USER_NAME git -C "$REPO_DIR" reset --hard "origin/$BRANCH"
 
@@ -67,7 +64,7 @@ else
 fi
 
 # ------------------------------------------------------------------------------
-# Sync configuration files
+# Sync configuration files (Waybar added)
 # ------------------------------------------------------------------------------
 log "Syncing configuration files..."
 
@@ -77,6 +74,7 @@ sudo -u $USER_NAME mkdir -p "$TARGET_DIR"
 sudo -u $USER_NAME cp -r "$ROFI_DIR" "$TARGET_DIR/rofi"
 sudo -u $USER_NAME cp -r "$HYPR_DIR" "$TARGET_DIR/hypr"
 sudo -u $USER_NAME cp -r "$KITTY_DIR" "$TARGET_DIR/kitty"
+sudo -u $USER_NAME cp -r "$WAYBAR_DIR" "$TARGET_DIR/waybar"
 sudo -u $USER_NAME cp -r "$NIX_DIR" "$TARGET_DIR/nixos"
 
 log "✔ Synced to $TARGET_DIR"
