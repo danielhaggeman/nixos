@@ -76,7 +76,10 @@ programs.gamemode.enable = true;
   # services.printing.enable = true;
 
   # Enable sound.
-  services.pulseaudio.enable = false;
+  services.pulseaudio.enable = true;
+  services.pipewire.enable = false;
+  services.pipewire.pulse.enable = false;
+  services.pipewire.alsa.enable = false;
   
   # polkit
   security.polkit.enable = true;
@@ -129,6 +132,7 @@ programs.gamemode.enable = true;
      swappy
      slurp
      grim
+     pulseaudio
    ];
 
 
@@ -138,10 +142,19 @@ programs.gamemode.enable = true;
 systemd.services.backup = {
   description = "Backup NixOS, Hyprland and Rofi configs to GitHub";
 
-  wantedBy = [ "multi-user.target" ];  # Runs automatically at boot
+  wantedBy = [ "multi-user.target" ];
 
   serviceConfig = {
     Type = "oneshot";
+
+    # REQUIRED: give systemd access to bash and core tools
+    Path = [
+      pkgs.bash
+      pkgs.git
+      pkgs.rsync
+      pkgs.coreutils
+    ];
+
     ExecStart = "/etc/nixos/scripts/backup.sh";
   };
 };
