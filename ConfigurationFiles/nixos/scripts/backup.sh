@@ -25,22 +25,21 @@ if [ ! -d "$REPO_DIR/.git" ]; then
     chown -R "$USER_NAME":"$(id -gn $USER_NAME)" "$REPO_DIR"
     sudo -u $USER_NAME git -C "$REPO_DIR" init
 
-    # Set origin
     sudo -u $USER_NAME git -C "$REPO_DIR" remote add origin "git@github.com:danielhaggeman/nixos.git"
 fi
 
 # ------------------------------------------------------------------------------
-# Ensure branch tracks upstream (origin/main or origin/master)
+# Ensure branch tracks upstream
 # ------------------------------------------------------------------------------
 if ! sudo -u $USER_NAME git -C "$REPO_DIR" rev-parse --abbrev-ref --symbolic-full-name @{u} >/dev/null 2>&1; then
     log "Setting upstream branch..."
     sudo -u $USER_NAME git -C "$REPO_DIR" branch -u origin/main 2>/dev/null || \
     sudo -u $USER_NAME git -C "$REPO_DIR" branch -u origin/master 2>/dev/null || \
-    log "⚠️ Could not set upstream automatically. (Repo may be empty.)"
+    log "⚠️ Could not set upstream automatically."
 fi
 
 # ------------------------------------------------------------------------------
-# Update repository from GitHub (self-healing pull)
+# Update self-healing pull
 # ------------------------------------------------------------------------------
 log "Updating from GitHub..."
 
@@ -48,7 +47,7 @@ if ! sudo -u $USER_NAME git -C "$REPO_DIR" pull --ff-only; then
     log "⚠️ Fast-forward not possible — attempting rebase..."
 
     if ! sudo -u $USER_NAME git -C "$REPO_DIR" pull --rebase; then
-        log "⚠️ Rebase failed — resetting to remote branch..."
+        log "⚠️ Rebase failed — hard resetting repo..."
 
         BRANCH=$(sudo -u $USER_NAME git -C "$REPO_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
 
@@ -64,18 +63,20 @@ else
 fi
 
 # ------------------------------------------------------------------------------
-# Sync configuration files (Waybar added)
+# Sync configuration files (rsync → no .git copied)
 # ------------------------------------------------------------------------------
 log "Syncing configuration files..."
 
 sudo -u $USER_NAME rm -rf "$TARGET_DIR"
 sudo -u $USER_NAME mkdir -p "$TARGET_DIR"
 
-sudo -u $USER_NAME cp -r "$ROFI_DIR" "$TARGET_DIR/rofi"
-sudo -u $USER_NAME cp -r "$HYPR_DIR" "$TARGET_DIR/hypr"
-sudo -u $USER_NAME cp -r "$KITTY_DIR" "$TARGET_DIR/kitty"
-sudo -u $USER_NAME cp -r "$WAYBAR_DIR" "$TARGET_DIR/waybar"
-sudo -u $USER_NAME cp -r "$NIX_DIR" "$TARGET_DIR/nixos"
+RSYNC="rsync -av --exclude='.git' --exclude='.cache' --delete"
+
+$RSYNC "$ROFI_DIR/"   "$TARGET_DIR/rofi/"   >/dev/null
+$RSYNC "$HYPR_DIR/"   "$TARGET_DIR/hypr/"   >/dev/null
+$RSYNC "$KITTY_DIR/"  "$TARGET_DIR/kitty/"  >/dev/null
+$RSYNC "$WAYBAR_DIR/" "$TARGET_DIR/waybar/" >/dev/null
+$RSYNC "$NIX_DIR/"     "$TARGET_DIR/nixos/" >/dev/null
 
 log "✔ Synced to $TARGET_DIR"
 
