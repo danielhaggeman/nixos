@@ -9,6 +9,7 @@ TARGET_DIR="$REPO_DIR/ConfigurationFiles"
 
 ROFI_DIR="$USER_HOME/.config/rofi"
 HYPR_DIR="$USER_HOME/.config/hypr"
+KITTY_DIR="$USER_HOME/.config/kitty"
 NIX_DIR="/etc/nixos"
 
 log() {
@@ -36,6 +37,7 @@ sudo -u $USER_NAME mkdir -p "$TARGET_DIR"
 
 sudo -u $USER_NAME cp -r "$ROFI_DIR" "$TARGET_DIR/rofi"
 sudo -u $USER_NAME cp -r "$HYPR_DIR" "$TARGET_DIR/hypr"
+sudo -u $USER_NAME cp -r "$KITTY_DIR" "$TARGET_DIR/kitty"
 sudo -u $USER_NAME cp -r "$NIX_DIR" "$TARGET_DIR/nixos"
 
 log "✔ Synced to $TARGET_DIR"
