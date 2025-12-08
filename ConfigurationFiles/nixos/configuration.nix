@@ -126,6 +126,9 @@ programs.gamemode.enable = true;
      mesa-demos
      unzip
      sudo
+     swappy
+     slurp
+     grim
    ];
 
 
