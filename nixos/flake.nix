@@ -49,7 +49,6 @@
               bottles
               heroic
               spicetify-cli
-              pavucontrol
             ];
           };
         }
