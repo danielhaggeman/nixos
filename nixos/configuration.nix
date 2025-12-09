@@ -42,6 +42,17 @@ services.udev.extraRules = ''
   SUBSYSTEM=="hidraw", ATTRS{idVendor}=="34d3", ATTRS{idProduct}=="1100", MODE="0666"
 '';
 
+# ZSH
+
+programs.zsh.enable = true;
+
+users.users.daniel = {
+  shell = pkgs.zsh;
+};
+
+
+
+
 # AMD GPU drivers
 services.xserver.videoDrivers = [ "amdgpu" ];
 
