@@ -42,6 +42,13 @@ services.udev.extraRules = ''
   SUBSYSTEM=="hidraw", ATTRS{idVendor}=="34d3", ATTRS{idProduct}=="1100", MODE="0666"
 '';
 
+# ZSH
+programs.zsh.enable = true;
+
+
+
+
+
 # AMD GPU drivers
 services.xserver.videoDrivers = [ "amdgpu" ];
 
@@ -132,7 +139,9 @@ programs.gamemode.enable = true;
      swappy
      slurp
      grim
+     yazi
      pulseaudio
+     wl-clipboard
    ];
 
 
