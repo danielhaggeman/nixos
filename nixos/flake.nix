@@ -50,6 +50,8 @@
               heroic
               spicetify-cli
               pavucontrol
+              polychromatic
+              openrazer-daemon
             ];
           };
         }
