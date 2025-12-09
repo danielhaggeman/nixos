@@ -51,7 +51,7 @@ programs.zsh = {
   syntaxHighlighting.enable = false; # handled manually in .zshrc
   autosuggestions.enable = false;    # handled manually in .zshrc
 };
-
+users.defaultUserShell = pkgs.zsh;
 
 
 
@@ -103,6 +103,7 @@ programs.gamemode.enable = true;
   # Define a user account. Don't forget to set a password with ‘passwd’.
    users.users.daniel = {
      isNormalUser = true;
+     shell = pkgs.zsh;
      extraGroups = [ "wheel" "networkmanager" "video" ]; 
      };
  security.sudo.wheelNeedsPassword = false; 
