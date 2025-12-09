@@ -10,6 +10,7 @@ ROFI_DIR="$USER_HOME/.config/rofi"
 HYPR_DIR="$USER_HOME/.config/hypr"
 KITTY_DIR="$USER_HOME/.config/kitty"
 WAYBAR_DIR="$USER_HOME/.config/waybar"
+YAZI_DIR="$USER_HOME/.config/yazi"
 NIX_DIR="/etc/nixos"
 
 log() {
@@ -43,7 +44,7 @@ log "Updating from GitHub..."
 
 if ! sudo -u $USER_NAME git -C "$REPO_DIR" pull --ff-only; then
     log "Fast-forward failed — attempting rebase..."
-    if ! sudo -u $USER_NAME git -C "$REPO_DIR" pull --rebase; then
+    if ! sudo -u $USER_NAME git -C "$USER_HOME/nixos-backup" pull --rebase; then
         log "Rebase failed — hard resetting to remote branch..."
 
         BRANCH=$(sudo -u $USER_NAME git -C "$REPO_DIR" rev-parse --abbrev-ref HEAD || echo "main")
@@ -62,11 +63,20 @@ sudo -u $USER_NAME mkdir -p "$TARGET_DIR"
 
 RSYNC="rsync -av --delete --exclude='.git' --exclude='.gitmodules' --exclude='.cache'"
 
-$RSYNC "$ROFI_DIR/"   "$TARGET_DIR/rofi/"
-$RSYNC "$HYPR_DIR/"   "$TARGET_DIR/hypr/"
-$RSYNC "$KITTY_DIR/"  "$TARGET_DIR/kitty/"
-$RSYNC "$WAYBAR_DIR/" "$TARGET_DIR/waybar/"
-$RSYNC "$NIX_DIR/"    "$TARGET_DIR/nixos/"
+$RSYNC "$ROFI_DIR/"      "$TARGET_DIR/rofi/"
+$RSYNC "$HYPR_DIR/"      "$TARGET_DIR/hypr/"
+$RSYNC "$KITTY_DIR/"     "$TARGET_DIR/kitty/"
+$RSYNC "$WAYBAR_DIR/"    "$TARGET_DIR/waybar/"
+$RSYNC "$NIX_DIR/"       "$TARGET_DIR/nixos/"
+
+# NEW: Yazi backup
+$RSYNC "$YAZI_DIR/"      "$TARGET_DIR/yazi/"
+
+# NEW: .zshrc backup
+if [ -f "$USER_HOME/.zshrc" ]; then
+    sudo -u $USER_NAME mkdir -p "$TARGET_DIR/zsh"
+    sudo -u $USER_NAME cp "$USER_HOME/.zshrc" "$TARGET_DIR/zsh/.zshrc"
+fi
 
 log "✔ Synced configuration files"
 
