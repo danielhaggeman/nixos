@@ -42,8 +42,15 @@ services.udev.extraRules = ''
   SUBSYSTEM=="hidraw", ATTRS{idVendor}=="34d3", ATTRS{idProduct}=="1100", MODE="0666"
 '';
 
-# ZSH
-programs.zsh.enable = true;
+# ZSH 
+programs.zsh = {
+  enable = true;
+
+  # Make Zsh the default login shell
+  enableCompletion = true;
+  syntaxHighlighting.enable = false; # handled manually in .zshrc
+  autosuggestions.enable = false;    # handled manually in .zshrc
+};
 
 
 
@@ -124,10 +131,9 @@ programs.gamemode.enable = true;
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
    environment.systemPackages = with pkgs; [
-     kitty
+     kitty # Terminal
      waybar
      hyprpaper
-     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
      wget
      lxqt.lxqt-policykit
      git
@@ -139,35 +145,24 @@ programs.gamemode.enable = true;
      swappy
      slurp
      grim
-     yazi
+     yazi # Text FileManager
+     xfce.thunar # GUI FileManager
      pulseaudio
      wl-clipboard
+     zsh
+     zsh-autosuggestions
+     zsh-syntax-highlighting
    ];
+
+# Openrazer
+hardware.openrazer = {
+  enable = true;
+  users = [ "daniel" ];  # your username
+};
+
 
 
 # Custom Systemd
-
-# Backup Script
-systemd.services.backup = {
-  description = "Backup NixOS, Hyprland and Rofi configs to GitHub";
-
-  wantedBy = [ "multi-user.target" ];
-
-  serviceConfig = {
-    Type = "oneshot";
-
-    # REQUIRED: give systemd access to bash and core tools
-    Path = [
-      pkgs.bash
-      pkgs.git
-      pkgs.rsync
-      pkgs.coreutils
-    ];
-
-    ExecStart = "/etc/nixos/scripts/backup.sh";
-  };
-};
-
 # Deepcool AIO
 systemd.services.deepcool-digital-linux = {
   description = "Deepcool Digital Linux Service";
@@ -182,6 +177,15 @@ systemd.services.deepcool-digital-linux = {
     User = "root";
   };
 };
+
+nix.settings = {
+  experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
+};
+
+
 
 
   # Some programs need SUID wrappers, can be configured further or are
