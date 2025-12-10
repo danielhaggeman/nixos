@@ -52,6 +52,8 @@
               pavucontrol
               polychromatic
               openrazer-daemon
+              fanctl
+ 	      lm_sensors
             ];
           };
         }

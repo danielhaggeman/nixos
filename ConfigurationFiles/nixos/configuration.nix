@@ -21,6 +21,9 @@ nixpkgs.config.allowUnfree = true;
 
   # Configure network connections interactively with nmcli or nmtui.
   networking.networkmanager.enable = true;
+#  networking.interfaces.eno1.ethtoolCommands = ''
+ # ethtool -s eno1 speed 1000 duplex full autoneg on
+#'';
 
   # Set your time zone.
   time.timeZone = "Europe/Amsterdam";
@@ -153,6 +156,8 @@ programs.gamemode.enable = true;
      zsh
      zsh-autosuggestions
      zsh-syntax-highlighting
+     deepcool-digital-linux
+     ethtool
    ];
 
 # Openrazer
@@ -178,6 +183,8 @@ systemd.services.deepcool-digital-linux = {
     User = "root";
   };
 };
+
+
 
 nix.settings = {
   experimental-features = [
