@@ -1,0 +1,32 @@
+{
+  "layer": "top",
+  "position": "top",
+  "spacing": 7,
+  "modules-left": [
+    "workspaces",
+    "window"
+  ],
+  "modules-center": [
+    "cpu",
+    "memory",
+    "network"
+  ],
+  "modules-right": [
+    "pulseaudio",
+    "battery",
+    "clock"
+  ],
+
+  "workspaces": {
+    "format": "{name}",
+    "all-outputs": true
+  },
+
+  "window": {
+    "format": "{title}"
+  },
+
+  "clock": {
+    "format": "{:%a %d %b %H:%M}"
+  }
+}
