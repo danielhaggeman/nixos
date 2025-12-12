@@ -158,6 +158,14 @@ programs.gamemode.enable = true;
      zsh-syntax-highlighting
      deepcool-digital-linux
      ethtool
+     bluez
+     bluez-tools
+     brightnessctl
+     fzf
+     networkmanager
+     pipewire
+     wireplumber
+     nerd-fonts.commit-mono
    ];
 
 # Openrazer
