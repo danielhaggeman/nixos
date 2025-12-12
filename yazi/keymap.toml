@@ -1,0 +1,8 @@
+[mgr]
+
+prepend_keymap = [
+  { on = "<C-S-c>", run = "yank",        desc = "Copy (yank) files" },
+  { on = "<C-S-x>", run = "yank --cut",  desc = "Cut (yank --cut) files" },
+  { on = "<C-S-v>", run = "paste",       desc = "Paste yanked/cut files" }
+]
+
