@@ -1,9 +1,0 @@
-dotfiles/nixos/hardware-configuration.nix
-
-result
-*.drv
-*.qcow2
-
-.ssh/
-.gnupg/
-.env
