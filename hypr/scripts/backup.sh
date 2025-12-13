@@ -108,6 +108,8 @@ fi
 # COMMIT + PUSH
 # -------------------------
 
+cd "$REPO_ROOT"
+
 git add -A
 
 if git diff --cached --quiet; then
@@ -117,6 +119,6 @@ else
 fi
 
 git branch -M main
-git push -u origin main
+git push -u origin main --force
 
 echo "==> DONE"
