@@ -53,19 +53,6 @@ rsync -aL \
   "$SRC_NIXOS/" "$DOTFILES_DIR/nixos/"
 
 # -------------------------
-# COPY nixos/scripts SAFELY
-# -------------------------
-
-SCRIPTS_TARGET=$(readlink -f "$SRC_NIXOS/scripts" 2>/dev/null) || true
-if [ -n "$SCRIPTS_TARGET" ] && [ -d "$SCRIPTS_TARGET" ]; then
-  echo "-> Copying nixos/scripts (resolved symlink)"
-  mkdir -p "$DOTFILES_DIR/nixos/scripts"
-  rsync -a "$SCRIPTS_TARGET/" "$DOTFILES_DIR/nixos/scripts/"
-else
-  echo "-> nixos/scripts is broken or missing, skipping"
-fi
-
-# -------------------------
 # .gitignore
 # -------------------------
 
