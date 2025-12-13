@@ -22,7 +22,7 @@ REPO_URL="git@github.com:danielhaggeman/nixos.git"
 
 echo "-> Preparing repo"
 mkdir -p "$DOTFILES_DIR"
-rm -rf "$DOTFILES_DIR"/*
+rm -rf "$REPO_ROOT"/*
 
 # -------------------------
 # COPY ~/dotfiles
@@ -116,7 +116,8 @@ git add -A
 if git diff --cached --quiet; then
   echo "-> No changes to commit"
 else
-  git commit --no-edit -m "backup"
+  TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+  git commit --no-edit -m "backup $TIMESTAMP"
 fi
 
 git branch -M main
