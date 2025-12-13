@@ -172,6 +172,10 @@ programs.gamemode.enable = true;
      cmake
    ];
 
+# Flatpak
+services.flatpak.enable = true;
+
+
 # Openrazer
 hardware.openrazer = {
   enable = true;
