@@ -12,7 +12,6 @@ SRC_ZSHRC="$HOME/.zshrc"
 SRC_NIXOS="/etc/nixos"
 
 REPO_ROOT="$HOME/github/dotfiles"
-DOTFILES_ROOT="$REPO_ROOT/dotfiles"
 
 REPO_URL="git@github.com:danielhaggeman/nixos.git"
 
@@ -21,8 +20,8 @@ REPO_URL="git@github.com:danielhaggeman/nixos.git"
 # -------------------------
 
 echo "-> Preparing repo"
-mkdir -p "$DOTFILES_ROOT"
-rm -rf "$DOTFILES_ROOT"/*
+mkdir -p "$REPO_ROOT"
+rm -rf "$REPO_ROOT"/*
 
 # -------------------------
 # COPY ~/dotfiles
@@ -31,26 +30,26 @@ rm -rf "$DOTFILES_ROOT"/*
 echo "-> Copying ~/dotfiles"
 rsync -a \
   --exclude ".git" \
-  "$SRC_HOME_DOTFILES/" "$DOTFILES_ROOT/"
+  "$SRC_HOME_DOTFILES/" "$REPO_ROOT/"
 
 # -------------------------
 # COPY .zshrc
 # -------------------------
 
 echo "-> Copying .zshrc"
-cp -f "$SRC_ZSHRC" "$DOTFILES_ROOT/.zshrc"
+cp -f "$SRC_ZSHRC" "$REPO_ROOT/.zshrc"
 
 # -------------------------
 # COPY /etc/nixos (NO SYMLINKS)
 # -------------------------
 
 echo "-> Copying /etc/nixos (flatten symlinks, skip broken)"
-mkdir -p "$DOTFILES_ROOT/nixos"
+mkdir -p "$REPO_ROOT/nixos"
 
 rsync -aL \
   --exclude "hardware-configuration.nix" \
   --exclude "scripts" \
-  "$SRC_NIXOS/" "$DOTFILES_ROOT/nixos/"
+  "$SRC_NIXOS/" "$REPO_ROOT/nixos/"
 
 # -------------------------
 # COPY nixos/scripts SAFELY
@@ -58,10 +57,10 @@ rsync -aL \
 
 if [ -L "$SRC_NIXOS/scripts" ] && [ -d "$(readlink -f "$SRC_NIXOS/scripts" 2>/dev/null)" ]; then
   echo "-> Copying nixos/scripts (resolved symlink)"
-  mkdir -p "$DOTFILES_ROOT/nixos/scripts"
+  mkdir -p "$REPO_ROOT/nixos/scripts"
   rsync -a \
     "$(readlink -f "$SRC_NIXOS/scripts")/" \
-    "$DOTFILES_ROOT/nixos/scripts/"
+    "$REPO_ROOT/nixos/scripts/"
 else
   echo "-> nixos/scripts is broken or missing, skipping"
 fi
@@ -71,7 +70,7 @@ fi
 # -------------------------
 
 cat <<EOF > "$REPO_ROOT/.gitignore"
-dotfiles/nixos/hardware-configuration.nix
+nixos/hardware-configuration.nix
 
 result
 *.drv
@@ -99,9 +98,9 @@ fi
 # HARD SYMLINK GUARD
 # -------------------------
 
-if find dotfiles -type l | grep -q .; then
-  echo "ERROR: Symlinks detected under dotfiles/ (this should never happen)"
-  find dotfiles -type l
+if find . -type l 2>/dev/null | grep -q .; then
+  echo "ERROR: Symlinks detected (this should never happen)"
+  find . -type l
   exit 1
 fi
 
