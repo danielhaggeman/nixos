@@ -41,7 +41,7 @@
             home.packages = with pkgs; [
               fastfetch
               vscode
-              spotify
+              #spotify # use flatpak for spicetify
               discord
               rofi
               protonup-qt
