@@ -54,3 +54,5 @@ export PATH="$HOME/go/bin:$PATH"
 
 # Steam fix for Wayland
 export STEAM_FORCE_X11=1
+
+export PATH=$PATH:/home/daniel/.spicetify
