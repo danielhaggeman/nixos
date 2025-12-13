@@ -1,4 +1,4 @@
-nixos/hardware-configuration.nix
+dotfiles/nixos/hardware-configuration.nix
 
 result
 *.drv
