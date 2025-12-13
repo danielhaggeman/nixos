@@ -2,8 +2,6 @@
 set -euo pipefail
 
 
-fdfjgftkm
-
 echo "==> Restore (everything from github to original locations)"
 
 # -------------------------
