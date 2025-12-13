@@ -1,90 +1,120 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "==> Backup + Push to ~/github/dotfiles"
+echo "==> Backup + Push dotfiles (clean rewrite)"
 
-# SOURCES
-SRC_DOTFILES="$HOME/dotfiles"
-SRC_ZSH="$HOME/.zshrc"
+# -------------------------
+# CONFIG
+# -------------------------
+
+SRC_HOME_DOTFILES="$HOME/dotfiles"
+SRC_ZSHRC="$HOME/.zshrc"
 SRC_NIXOS="/etc/nixos"
 
-# DESTINATION (repo root)
-DST="$HOME/github/dotfiles"
-
-REPO_URL="https://github.com/danielhaggeman/nixos.git"
+REPO_DIR="$HOME/github/dotfiles"
+REPO_URL="git@github.com:danielhaggeman/nixos.git"
 
 # -------------------------
-# 1. PREPARE DESTINATION
+# PREPARE REPO DIR
 # -------------------------
 
-mkdir -p "$DST"
-rm -rf "$DST"/*
+echo "-> Preparing repo directory"
+mkdir -p "$REPO_DIR"
+rm -rf "$REPO_DIR"/*
 
 # -------------------------
-# 2. COPY USER DOTFILES
+# COPY ~/dotfiles
 # -------------------------
 
-if [ -d "$SRC_DOTFILES" ]; then
+if [ -d "$SRC_HOME_DOTFILES" ]; then
   echo "-> Copying ~/dotfiles"
-  rsync -a \
+  rsync -aL \
     --exclude ".git" \
-    "$SRC_DOTFILES/" "$DST/"
+    "$SRC_HOME_DOTFILES/" "$REPO_DIR/"
 fi
 
 # -------------------------
-# 3. COPY .zshrc
+# COPY .zshrc
 # -------------------------
 
-echo "-> Copying .zshrc"
-cp -f "$SRC_ZSH" "$DST/.zshrc"
+if [ -f "$SRC_ZSHRC" ]; then
+  echo "-> Copying .zshrc"
+  cp -f "$SRC_ZSHRC" "$REPO_DIR/.zshrc"
+fi
 
 # -------------------------
-# 4. COPY NIXOS CONFIG
+# COPY /etc/nixos (NO SYMLINKS)
 # -------------------------
 
-echo "-> Copying NixOS config (excluding hardware-configuration.nix)"
-mkdir -p "$DST/nixos"
-rsync -a \
+echo "-> Copying /etc/nixos (dereferencing symlinks)"
+mkdir -p "$REPO_DIR/nixos"
+
+rsync -aL \
   --exclude "hardware-configuration.nix" \
-  "$SRC_NIXOS/" "$DST/nixos/"
+  "$SRC_NIXOS/" "$REPO_DIR/nixos/"
 
 # -------------------------
-# 5. GITIGNORE SAFETY NET
+# ENSURE .gitignore
 # -------------------------
 
-cat <<EOF > "$DST/.gitignore"
-# NixOS hardware-specific
+echo "-> Writing .gitignore"
+cat <<EOF > "$REPO_DIR/.gitignore"
+# Hardware specific
 nixos/hardware-configuration.nix
 
-# Nix build artifacts
+# Secrets
+.ssh/
+.gnupg/
+.env
+*.key
+*.pem
+
+# Nix artifacts
 result
 *.drv
 *.qcow2
 EOF
 
 # -------------------------
-# 6. GIT COMMIT + PUSH
+# GIT SETUP
 # -------------------------
 
-cd "$DST"
+cd "$REPO_DIR"
 
 if [ ! -d ".git" ]; then
   echo "-> Initializing git repo"
   git init
   git remote add origin "$REPO_URL"
+else
+  git remote set-url origin "$REPO_URL"
 fi
+
+# -------------------------
+# SAFETY: NO SYMLINKS
+# -------------------------
+
+if find . -type l | grep -q .; then
+  echo "ERROR: Symlinks detected in repo. Aborting."
+  find . -type l
+  exit 1
+fi
+
+# -------------------------
+# COMMIT + PUSH
+# -------------------------
 
 git add -A
 
 if git diff --cached --quiet; then
   echo "-> No changes to commit"
 else
-  git commit -m "Update dotfiles (user + nixos, no hardware config)"
+  git commit -m "Update dotfiles (user + nixos, portable)"
 fi
 
 git branch -M main
 git push -u origin main
 
 echo "==> Done"
-echo "    Repo root : ~/github/dotfiles"
-echo "    GitHub    : dotfiles as root"
+echo "    Repo path : ~/github/dotfiles"
+echo "    Repo root : dotfiles"
+echo "    Symlinks  : none"

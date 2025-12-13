@@ -1,7 +1,9 @@
-# NixOS hardware-specific
-nixos/hardware-configuration.nix
+dotfiles/nixos/hardware-configuration.nix
 
-# Nix build artifacts
 result
 *.drv
 *.qcow2
+
+.ssh/
+.gnupg/
+.env
