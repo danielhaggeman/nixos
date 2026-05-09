@@ -201,9 +201,10 @@ networking.search = lib.mkForce [ ];
     haruna
     losslesscut-bin
     kdePackages.kdenlive
+    hyprviz
 #    claude-code
 
-    ## Dynamic Island (eww + EasyEffects)
+    ## Dynamic Island
     eww
     easyeffects
     socat
