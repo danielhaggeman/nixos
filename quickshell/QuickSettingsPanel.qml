@@ -108,5 +108,28 @@ Rectangle {
             }
             Text { text: "45%"; color: "#6272a4"; font.family: "JetBrains Mono"; font.pixelSize: 10 }
         }
+
+        // Divider
+        Rectangle { Layout.fillWidth: true; height: 1; color: "#44475a30" }
+
+        // Settings button — opens full SettingsPopup
+        Rectangle {
+            id: settingsBtn
+            Layout.fillWidth: true; height: 38; radius: 10
+            color: settingsMouse.containsMouse ? "#44475a" : "#282a36"
+            Behavior on color { ColorAnimation { duration: 150 } }
+
+            RowLayout {
+                anchors { fill: parent; leftMargin: 12; rightMargin: 12 }
+                spacing: 10
+                Text { text: "󰒓"; font.family: "Iosevka Nerd Font"; font.pixelSize: 16; color: "#6272a4" }
+                Text { text: "Settings"; color: "#f8f8f2"; font.family: "JetBrains Mono"; font.pixelSize: 11; font.bold: true; Layout.fillWidth: true }
+                Text { text: "›"; color: "#6272a4"; font.family: "JetBrains Mono"; font.pixelSize: 14 }
+            }
+            MouseArea {
+                id: settingsMouse; hoverEnabled: true; anchors.fill: parent
+                onClicked: Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/qs_manager.sh toggle settings"])
+            }
+        }
     }
 }
