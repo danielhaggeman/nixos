@@ -870,9 +870,10 @@ Variants {
                     radius: barWindow.s(14); border.width: 1; border.color: Qt.rgba(mocha.text.r, mocha.text.g, mocha.text.b, 0.05)
                     y: (parent.height - barWindow.barHeight) / 2
                     height: barWindow.barHeight
-                    clip: true 
-                    
-                    width: barWindow.isMediaActive ? innerMediaLayout.implicitWidth + barWindow.s(24) : 0
+                    clip: true
+                    visible: false  // media shown in center notch pill instead
+
+                    width: 0
                     Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.OutQuint } }
 
                     property real defaultX: workspacesBox.defaultX + workspacesBox.width + (workspacesBox.width > 0 ? barWindow.s(4) : 0)
@@ -1468,15 +1469,15 @@ Variants {
                                 id: themeBtn
                                 property bool isHovered: themeBtnMouse.containsMouse
                                 height: sysLayout.pillHeight; radius: barWindow.s(10)
-                                color: isHovered ? Qt.rgba(mocha.surface1.r, mocha.surface1.g, mocha.surface1.b, 0.6) : Qt.rgba(mocha.surface0.r, mocha.surface0.g, mocha.surface0.b, 0.4)
+                                color: isHovered ? "#6272a460" : "#44475a40"
                                 width: themeBtnRow.implicitWidth + barWindow.s(20)
-                                Behavior on color { ColorAnimation { duration: 200 } }
+                                Behavior on color { ColorAnimation { duration: 150 } }
                                 Row {
                                     id: themeBtnRow
                                     anchors.centerIn: parent
                                     spacing: barWindow.s(6)
-                                    Text { anchors.verticalCenter: parent.verticalCenter; text: "󰏘"; font.family: "Iosevka Nerd Font"; font.pixelSize: barWindow.s(16); color: themeBtn.isHovered ? mocha.text : mocha.overlay2 }
-                                    Text { anchors.verticalCenter: parent.verticalCenter; text: "Theme"; font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(12); font.weight: Font.Bold; color: mocha.text }
+                                    Text { anchors.verticalCenter: parent.verticalCenter; text: "󰏘"; font.family: "Iosevka Nerd Font"; font.pixelSize: barWindow.s(16); color: themeBtn.isHovered ? mocha.mauve : mocha.overlay2; Behavior on color { ColorAnimation { duration: 150 } } }
+                                    Text { anchors.verticalCenter: parent.verticalCenter; text: "Theme"; font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(12); font.weight: Font.Bold; color: themeBtn.isHovered ? mocha.text : mocha.subtext0; Behavior on color { ColorAnimation { duration: 150 } } }
                                 }
                                 MouseArea { id: themeBtnMouse; hoverEnabled: true; anchors.fill: parent; onClicked: Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/qs_manager.sh toggle theme"]) }
                             }
@@ -1486,15 +1487,15 @@ Variants {
                                 id: qsBtn
                                 property bool isHovered: qsBtnMouse.containsMouse
                                 height: sysLayout.pillHeight; radius: barWindow.s(10)
-                                color: isHovered ? Qt.rgba(mocha.surface1.r, mocha.surface1.g, mocha.surface1.b, 0.6) : Qt.rgba(mocha.surface0.r, mocha.surface0.g, mocha.surface0.b, 0.4)
+                                color: isHovered ? "#6272a460" : "#44475a40"
                                 width: qsBtnRow.implicitWidth + barWindow.s(20)
-                                Behavior on color { ColorAnimation { duration: 200 } }
+                                Behavior on color { ColorAnimation { duration: 150 } }
                                 Row {
                                     id: qsBtnRow
                                     anchors.centerIn: parent
                                     spacing: barWindow.s(6)
-                                    Text { anchors.verticalCenter: parent.verticalCenter; text: "⊞"; font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(16); color: qsBtn.isHovered ? mocha.text : mocha.overlay2 }
-                                    Text { anchors.verticalCenter: parent.verticalCenter; text: "Settings"; font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(12); font.weight: Font.Bold; color: mocha.text }
+                                    Text { anchors.verticalCenter: parent.verticalCenter; text: "⊞"; font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(16); color: qsBtn.isHovered ? mocha.mauve : mocha.overlay2; Behavior on color { ColorAnimation { duration: 150 } } }
+                                    Text { anchors.verticalCenter: parent.verticalCenter; text: "Settings"; font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(12); font.weight: Font.Bold; color: qsBtn.isHovered ? mocha.text : mocha.subtext0; Behavior on color { ColorAnimation { duration: 150 } } }
                                 }
                                 MouseArea { id: qsBtnMouse; hoverEnabled: true; anchors.fill: parent; onClicked: Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/qs_manager.sh toggle quicksettings"]) }
                             }
