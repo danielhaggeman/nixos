@@ -52,7 +52,7 @@
       "custom/spotify": {
         "interval": 1,
         "return-type": "json",
-        "exec": "~/.config/waybar/spotify.sh",
+        "exec": "~/dotfiles/waybar/spotify.sh",
         "exec-if": "pgrep spotify",
         "escape": true
     }

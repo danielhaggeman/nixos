@@ -1,26 +1,112 @@
-#!/bin/bash
-# ~/.config/hypr/scripts/backup.sh
-# Auto backup selected configs to GitHub
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Define the source config folders
-CONFIG_FOLDERS=(kitty spicetify wal hypr waybar wofi)
+echo "==> Backup + Push (everything UNDER dotfiles/)"
 
-# Ensure dotfiles repo exists
-cd ~/dotfiles || exit
+# -------------------------
+# CONFIG
+# -------------------------
 
-# Copy the selected configs to the repo
-mkdir -p .config
-for folder in "${CONFIG_FOLDERS[@]}"; do
-    cp -r ~/.config/"$folder" .config/ 2>/dev/null
-done
+SRC_HOME_DOTFILES="$HOME/dotfiles"
+SRC_ZSHRC="$HOME/.zshrc"
+SRC_NIXOS="/etc/nixos"
 
-# Copy .zshrc
-cp ~/.zshrc . 2>/dev/null
+REPO_ROOT="$HOME/github/dotfiles"
+DOTFILES_DIR="$REPO_ROOT/dotfiles"
 
-# Only commit if there are changes
-if ! git diff-index --quiet HEAD --; then
-    git add .
-    git commit -m "Auto-backup: $(date '+%Y-%m-%d %H:%M:%S')"
-    git push origin main
+REPO_URL="git@github.com:danielhaggeman/nixos.git"
+
+# -------------------------
+# PREPARE REPO
+# -------------------------
+
+echo "-> Preparing repo"
+mkdir -p "$DOTFILES_DIR"
+rm -rf "$REPO_ROOT"/*
+
+# -------------------------
+# COPY ~/dotfiles
+# -------------------------
+
+echo "-> Copying ~/dotfiles"
+rsync -a \
+  --exclude ".git" \
+  "$SRC_HOME_DOTFILES/" "$DOTFILES_DIR/"
+
+# -------------------------
+# COPY .zshrc
+# -------------------------
+
+echo "-> Copying .zshrc"
+cp -f "$SRC_ZSHRC" "$DOTFILES_DIR/.zshrc"
+
+# -------------------------
+# COPY /etc/nixos (NO SYMLINKS)
+# -------------------------
+
+echo "-> Copying /etc/nixos (flatten symlinks, skip broken)"
+mkdir -p "$DOTFILES_DIR/nixos"
+
+rsync -aL \
+  --exclude "hardware-configuration.nix" \
+  --exclude "scripts" \
+  "$SRC_NIXOS/" "$DOTFILES_DIR/nixos/"
+
+# -------------------------
+# .gitignore
+# -------------------------
+
+cat <<EOF > "$REPO_ROOT/.gitignore"
+dotfiles/nixos/hardware-configuration.nix
+
+result
+*.drv
+*.qcow2
+
+.ssh/
+.gnupg/
+.env
+EOF
+
+# -------------------------
+# GIT SETUP
+# -------------------------
+
+cd "$REPO_ROOT"
+
+if [ ! -d ".git" ]; then
+  git init
+  git remote add origin "$REPO_URL"
+else
+  git remote set-url origin "$REPO_URL"
 fi
 
+# -------------------------
+# HARD SYMLINK GUARD
+# -------------------------
+
+if find . -type l 2>/dev/null | grep -q .; then
+  echo "ERROR: Symlinks detected (this should never happen)"
+  find . -type l
+  exit 1
+fi
+
+# -------------------------
+# COMMIT + PUSH
+# -------------------------
+
+cd "$REPO_ROOT"
+
+git add -A
+
+if git diff --cached --quiet; then
+  echo "-> No changes to commit"
+else
+  TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+  git commit --no-edit -m "backup $TIMESTAMP"
+fi
+
+git branch -M main
+git push -u origin main --force
+
+echo "==> DONE"

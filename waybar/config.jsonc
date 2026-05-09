@@ -1,32 +1,139 @@
+// -*- mode: jsonc -*-
 {
   "layer": "top",
   "position": "top",
-  "spacing": 7,
+  "height": 38,
+  "spacing": 6,
+  "margin-top": 6,
+  "margin-left": 10,
+  "margin-right": 10,
+
   "modules-left": [
-    "workspaces",
-    "window"
+    "custom/launcher",
+    "hyprland/workspaces",
+    "hyprland/window"
   ],
+
   "modules-center": [
+    "custom/playerctl-prev",
+    "custom/playerctl-play",
+    "custom/playerctl-next",
+    "custom/mediaplayer"
+  ],
+
+  "modules-right": [
+    "tray",
+    "pulseaudio",
+    "network",
     "cpu",
     "memory",
-    "network"
-  ],
-  "modules-right": [
-    "pulseaudio",
-    "battery",
     "clock"
   ],
 
-  "workspaces": {
-    "format": "{name}",
-    "all-outputs": true
+  "custom/launcher": {
+    "format": "󱄅",
+    "tooltip-format": "NixOS — Apps (Super+D)",
+    "on-click": "rofi -show drun"
   },
 
-  "window": {
-    "format": "{title}"
+  "hyprland/workspaces": {
+    "disable-scroll": false,
+    "all-outputs": true,
+    "warp-on-scroll": false,
+    "format": "{icon}",
+    "format-icons": {
+      "active": "",
+      "default": "",
+      "urgent": ""
+    },
+    "on-click": "activate"
+  },
+
+  "hyprland/window": {
+    "format": "{title}",
+    "max-length": 60,
+    "separate-outputs": true,
+    "rewrite": {
+      "(.*) — Mozilla Firefox": "$1",
+      "(.*) - Visual Studio Code": " $1",
+      "": ""
+    }
+  },
+
+  "custom/playerctl-prev": {
+    "format": "",
+    "on-click": "playerctl previous",
+    "tooltip-format": "Previous track"
+  },
+
+  "custom/playerctl-play": {
+    "exec": "~/dotfiles/waybar/scripts/playerctl-status.sh",
+    "interval": 1,
+    "return-type": "json",
+    "format": "{}",
+    "on-click": "playerctl play-pause"
+  },
+
+  "custom/playerctl-next": {
+    "format": "",
+    "on-click": "playerctl next",
+    "tooltip-format": "Next track"
+  },
+
+  "custom/mediaplayer": {
+    "exec": "~/dotfiles/hypr/scripts/mediaplayer.sh 2>/dev/null",
+    "format": "{}",
+    "return-type": "json",
+    "on-click": "playerctl play-pause",
+    "max-length": 45,
+    "escape": true,
+    "tooltip": false
+  },
+
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-bluetooth": "{icon} {volume}%",
+    "format-muted": " muted",
+    "format-icons": {
+      "headphone": "",
+      "headset": "",
+      "default": ["", "", ""]
+    },
+    "on-click": "pavucontrol",
+    "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+    "scroll-step": 5,
+    "tooltip-format": "{desc}"
+  },
+
+  "network": {
+    "format-wifi": "  {signalStrength}%",
+    "format-ethernet": " connected",
+    "format-disconnected": "󰤭 offline",
+    "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}/{cidr}",
+    "tooltip-format-ethernet": "{ifname}\n{ipaddr}/{cidr}",
+    "on-click": "nm-connection-editor"
+  },
+
+  "cpu": {
+    "format": "  {usage}%",
+    "interval": 2,
+    "tooltip": false
+  },
+
+  "memory": {
+    "format": "  {percentage}%",
+    "interval": 2,
+    "tooltip-format": "{used:0.1f}G / {total:0.1f}G"
   },
 
   "clock": {
-    "format": "{:%a %d %b %H:%M}"
+    "format": "  {:%H:%M}",
+    "format-alt": "  {:%a %d %b %Y}",
+    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+  },
+
+  "tray": {
+    "icon-size": 14,
+    "spacing": 8
   }
 }
