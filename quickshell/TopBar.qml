@@ -871,7 +871,6 @@ Variants {
                     y: (parent.height - barWindow.barHeight) / 2
                     height: barWindow.barHeight
                     clip: true
-                    visible: false  // media shown in center notch pill instead
 
                     width: 0
                     Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.OutQuint } }
@@ -881,8 +880,8 @@ Variants {
 
                     x: defaultX + (settingsX - defaultX) * barWindow.settingsSlideProgress
 
-                    visible: width > 0 || opacity > 0
-                    opacity: barWindow.isMediaActive ? 1.0 : 0.0
+                    visible: false  // media now shown inline in center notch pill
+                    opacity: 0.0
                     Behavior on opacity { NumberAnimation { duration: 400 } }
                     
                     Item {
