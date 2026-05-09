@@ -107,7 +107,7 @@ Item {
     property bool isFirstLoad: true
     readonly property bool isTodaySelected: window.selectedDateStr === getIsoDate(new Date())
 
-    readonly property string scriptsDir: Quickshell.env("HOME") + "/.config/hypr/scripts/quickshell/focustime"
+    readonly property string scriptsDir: Quickshell.env("HOME") + "/.config/quickshell/focustime"
     readonly property string stateFilePath: paths.getRunDir("focustime") + "/focustime_state.json"
 
     // --- ENHANCED CHOREOGRAPHED STARTUP STATES ---

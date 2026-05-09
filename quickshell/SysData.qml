@@ -51,7 +51,7 @@ Item {
         running: false
         // Safely delegates path expansion directly to bash, preventing QML parsing issues
         // Passes dynamic sysdata cache dir in case the script needs it
-        command: ["bash", "-c", "export QS_CACHE_SYSDATA=" + paths.getCacheDir("sysdata") + "; bash ~/.config/hypr/scripts/quickshell/watchers/sys_fetcher.sh"]
+        command: ["bash", "-c", "export QS_CACHE_SYSDATA=" + paths.getCacheDir("sysdata") + "; bash ~/.config/quickshell/watchers/sys_fetcher.sh"]
         stdout: StdioCollector {
             onStreamFinished: {
                 let text = this.text ? this.text.trim() : "";

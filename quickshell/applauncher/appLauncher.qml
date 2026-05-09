@@ -56,7 +56,7 @@ Item {
     Process {
         id: appFetcher
         running: true
-        command: ["bash", "-c", "python3 " + Quickshell.env("HOME") + "/.config/hypr/scripts/quickshell/applauncher/app_fetcher.py"]
+        command: ["bash", "-c", "python3 " + Quickshell.env("HOME") + "/.config/quickshell/applauncher/app_fetcher.py"]
         
         stdout: StdioCollector {
             onStreamFinished: {
