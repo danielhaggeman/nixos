@@ -143,7 +143,7 @@ networking.search = lib.mkForce [ ];
   ## System packages
   environment.systemPackages = with pkgs; [
     kitty
-    waybar
+    alacritty
     hyprpaper
     wget
     lxqt.lxqt-policykit
@@ -204,11 +204,23 @@ networking.search = lib.mkForce [ ];
     hyprviz
 #    claude-code
 
-    ## Dynamic Island
-    eww
+    ## Dynamic Island / Media
     easyeffects
     socat
     jq
+
+    ## Wallpaper + dynamic theming
+    swww
+    pywal
+    imagemagick
+
+    ## Quickshell bar
+    quickshell
+    swayosd
+    matugen
+    hyprlock
+    inotify-tools
+    pamixer
   ];
 
   ## Tailscale
