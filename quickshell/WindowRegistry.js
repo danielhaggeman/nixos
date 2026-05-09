@@ -63,6 +63,8 @@ function getLayout(name, mx, my, mw, mh, userScale) {
         },
         
         // --- Screen Spanning Panels ---
+        "quicksettings": { w: s(360, scale), h: s(500, scale), rx: mw - s(364, scale), ry: s(60, scale), comp: "QuickSettingsPanel.qml" },
+        "theme":         { w: s(320, scale), h: s(420, scale), rx: mw - s(324, scale), ry: s(60, scale), comp: "ThemePickerPanel.qml" },
         "settings":  { w: s(450, scale), h: mh - s(0, scale), rx: s(0, scale), ry: s(0, scale), comp: "settings/SettingsPopup.qml" },
         
         // --- Utility ---

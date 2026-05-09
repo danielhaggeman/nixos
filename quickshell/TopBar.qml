@@ -332,7 +332,7 @@ Variants {
             Process {
                 id: musicForceRefresh
                 running: true
-                command: ["bash", "-c", "bash ~/.config/hypr/scripts/quickshell/music/music_info.sh | tee " + paths.getRunDir("music") + "/music_info.json"]
+                command: ["bash", "-c", "bash ~/.config/quickshell/music/music_info.sh | tee " + paths.getRunDir("music") + "/music_info.json"]
                 stdout: StdioCollector {
                     onStreamFinished: {
                         let txt = this.text.trim();
@@ -416,7 +416,7 @@ Variants {
 
             Process {
                 id: kbPoller; running: true
-                command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/kb_fetch.sh"]
+                command: ["bash", "-c", "~/.config/quickshell/watchers/kb_fetch.sh"]
                 stdout: StdioCollector {
                     onStreamFinished: {
                         let txt = this.text.trim();
@@ -427,11 +427,11 @@ Variants {
                     }
                 }
             }
-            Process { id: kbWaiter; command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/kb_wait.sh"]; onExited: { kbPoller.running = false; kbPoller.running = true; } }
+            Process { id: kbWaiter; command: ["bash", "-c", "~/.config/quickshell/watchers/kb_wait.sh"]; onExited: { kbPoller.running = false; kbPoller.running = true; } }
 
             Process {
                 id: audioPoller; running: true
-                command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/audio_fetch.sh"]
+                command: ["bash", "-c", "~/.config/quickshell/watchers/audio_fetch.sh"]
                 stdout: StdioCollector {
                     onStreamFinished: {
                         let txt = this.text.trim();
@@ -450,11 +450,11 @@ Variants {
                     }
                 }
             }
-            Process { id: audioWaiter; command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/audio_wait.sh"]; onExited: { audioPoller.running = false; audioPoller.running = true; } }
+            Process { id: audioWaiter; command: ["bash", "-c", "~/.config/quickshell/watchers/audio_wait.sh"]; onExited: { audioPoller.running = false; audioPoller.running = true; } }
 
             Process {
                 id: networkPoller; running: true
-                command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/network_fetch.sh"]
+                command: ["bash", "-c", "~/.config/quickshell/watchers/network_fetch.sh"]
                 stdout: StdioCollector {
                     onStreamFinished: {
                         let txt = this.text.trim();
@@ -472,11 +472,11 @@ Variants {
                     }
                 }
             }
-            Process { id: networkWaiter; command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/network_wait.sh"]; onExited: { networkPoller.running = false; networkPoller.running = true; } }
+            Process { id: networkWaiter; command: ["bash", "-c", "~/.config/quickshell/watchers/network_wait.sh"]; onExited: { networkPoller.running = false; networkPoller.running = true; } }
 
             Process {
                 id: btPoller; running: true
-                command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/bt_fetch.sh"]
+                command: ["bash", "-c", "~/.config/quickshell/watchers/bt_fetch.sh"]
                 stdout: StdioCollector {
                     onStreamFinished: {
                         let txt = this.text.trim();
@@ -493,14 +493,14 @@ Variants {
                     }
                 }
             }
-            Process { id: btWaiter; command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/bt_wait.sh"]; onExited: { btPoller.running = false; btPoller.running = true; } }
+            Process { id: btWaiter; command: ["bash", "-c", "~/.config/quickshell/watchers/bt_wait.sh"]; onExited: { btPoller.running = false; btPoller.running = true; } }
 
             Process {
                 id: weatherPoller
                 command: ["bash", "-c", `
-                    echo "$(~/.config/hypr/scripts/quickshell/calendar/weather.sh --current-icon)"
-                    echo "$(~/.config/hypr/scripts/quickshell/calendar/weather.sh --current-temp)"
-                    echo "$(~/.config/hypr/scripts/quickshell/calendar/weather.sh --current-hex)"
+                    echo "$(~/.config/quickshell/calendar/weather.sh --current-icon)"
+                    echo "$(~/.config/quickshell/calendar/weather.sh --current-temp)"
+                    echo "$(~/.config/quickshell/calendar/weather.sh --current-hex)"
                 `]
                 stdout: StdioCollector {
                     onStreamFinished: {
