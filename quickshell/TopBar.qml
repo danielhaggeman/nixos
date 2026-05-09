@@ -241,10 +241,6 @@ Variants {
             property string volIcon: "󰕾"
             property bool isMuted: false
             
-            property string batPercent: "100%"
-            property string batIcon: "󰁹"
-            property string batStatus: "Unknown"
-            
             property string kbLayout: "us"
             
             ListModel { 
@@ -272,14 +268,6 @@ Variants {
             property bool showEthernet: barWindow.ethStatus === "Connected" || (barWindow.isDesktop && !barWindow.isWifiOn)
             
             property bool isSoundActive: !barWindow.isMuted && parseInt(barWindow.volPercent) > 0
-            property int batCap: parseInt(barWindow.batPercent) || 0
-            property bool isCharging: barWindow.batStatus === "Charging" || barWindow.batStatus === "Full"
-            
-            property color batDynamicColor: {
-                if (isCharging) return mocha.green;
-                if (batCap <= 20) return mocha.red;
-                return mocha.text; 
-            }
 
             Process {
                 id: wsDaemon
@@ -506,28 +494,6 @@ Variants {
                 }
             }
             Process { id: btWaiter; command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/bt_wait.sh"]; onExited: { btPoller.running = false; btPoller.running = true; } }
-
-            Process {
-                id: batteryPoller; running: true
-                command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/battery_fetch.sh"]
-                stdout: StdioCollector {
-                    onStreamFinished: {
-                        let txt = this.text.trim();
-                        if (txt !== "") {
-                            try {
-                                let data = JSON.parse(txt);
-                                let newBat = data.percent.toString() + "%";
-                                if (barWindow.batPercent !== newBat) barWindow.batPercent = newBat;
-                                if (barWindow.batIcon !== data.icon) barWindow.batIcon = data.icon;
-                                if (barWindow.batStatus !== data.status) barWindow.batStatus = data.status;
-                            } catch(e) {}
-                        }
-                        batteryWaiter.running = false;
-                        batteryWaiter.running = true;
-                    }
-                }
-            }
-            Process { id: batteryWaiter; command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/battery_wait.sh"]; onExited: { batteryPoller.running = false; batteryPoller.running = true; } }
 
             Process {
                 id: weatherPoller
@@ -1448,60 +1414,7 @@ Variants {
                                 MouseArea { id: volMouse; hoverEnabled: true; anchors.fill: parent; onClicked: Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/qs_manager.sh toggle volume"]) }
                             }
 
-                            Rectangle {
-                                property bool isHovered: batMouse.containsMouse
-                                color: isHovered ? Qt.rgba(mocha.surface1.r, mocha.surface1.g, mocha.surface1.b, 0.6) : Qt.rgba(mocha.surface0.r, mocha.surface0.g, mocha.surface0.b, 0.4); 
-                                radius: barWindow.s(10); height: sysLayout.pillHeight;
-                                clip: true
-
-                                Rectangle {
-                                    anchors.fill: parent
-                                    radius: barWindow.s(10)
-                                    opacity: 1.0 
-                                    Behavior on opacity { NumberAnimation { duration: 300 } }
-                                    gradient: Gradient {
-                                        orientation: Gradient.Horizontal
-                                        GradientStop { position: 0.0; color: barWindow.isDesktop ? mocha.red : barWindow.batDynamicColor; Behavior on color { ColorAnimation { duration: 300 } } }
-                                        GradientStop { position: 1.0; color: barWindow.isDesktop ? Qt.lighter(mocha.red, 1.3) : Qt.lighter(barWindow.batDynamicColor, 1.3); Behavior on color { ColorAnimation { duration: 300 } } }
-                                    }
-                                }
-                                
-                                property real targetWidth: barWindow.isDesktop ? barWindow.s(34) : batLayoutRow.implicitWidth + barWindow.s(24)
-                                width: targetWidth
-                                Behavior on width { NumberAnimation { duration: 500; easing.type: Easing.OutQuint } }
-                                
-                                scale: isHovered ? 1.05 : 1.0
-                                Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutExpo } }
-                                Behavior on color { ColorAnimation { duration: 200 } }
-
-                                property bool initAnimTrigger: false
-                                Timer { running: rightContent.showLayout && !parent.initAnimTrigger; interval: 200; onTriggered: parent.initAnimTrigger = true }
-                                opacity: initAnimTrigger ? 1 : 0
-                                transform: Translate { y: parent.initAnimTrigger ? 0 : barWindow.s(15); Behavior on y { NumberAnimation { duration: 500; easing.type: Easing.OutBack } } }
-                                Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
-
-                                Row { 
-                                    id: batLayoutRow
-                                    anchors.centerIn: parent
-                                    spacing: barWindow.s(8)
-                                    Text { 
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: barWindow.isDesktop ? "" : barWindow.batIcon; 
-                                        font.family: "Iosevka Nerd Font"; font.pixelSize: barWindow.isDesktop ? barWindow.s(18) : barWindow.s(16); 
-                                        color: mocha.base 
-                                        Behavior on color { ColorAnimation { duration: 300 } }
-                                    }
-                                    Text { 
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        visible: !barWindow.isDesktop
-                                        text: barWindow.batPercent; font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(13); font.weight: Font.Black; 
-                                        color: mocha.base 
-                                        Behavior on color { ColorAnimation { duration: 300 } }
-                                    }
-                                }
-                                MouseArea { id: batMouse; hoverEnabled: true; anchors.fill: parent; onClicked: Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/qs_manager.sh toggle battery"]) }
-                            }                       
-                 }
+                        }
             }
             Rectangle {
                         id: recButton
