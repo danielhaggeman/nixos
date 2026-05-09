@@ -520,7 +520,7 @@ Variants {
                 interval: 1000; running: true; repeat: true; triggeredOnStart: true
                 onTriggered: {
                     let d = new Date();
-                    barWindow.timeStr = Qt.formatDateTime(d, "HH:mm:ss");
+                    barWindow.timeStr = Qt.formatDateTime(d, "HH:mm");
                     barWindow.fullDateStr = Qt.formatDateTime(d, "dddd, MMMM dd");
                     if (barWindow.typeInIndex >= barWindow.fullDateStr.length) {
                         barWindow.typeInIndex = barWindow.fullDateStr.length;
@@ -1010,14 +1010,14 @@ Variants {
                 Rectangle {
                     id: centerBox
                     property bool isHovered: centerMouse.containsMouse
-                    color: isHovered ? Qt.rgba(mocha.surface1.r, mocha.surface1.g, mocha.surface1.b, 0.95) : Qt.rgba(mocha.base.r, mocha.base.g, mocha.base.b, 0.75)
+                    color: "#11111b"
                     radius: barWindow.s(14); border.width: 1; border.color: Qt.rgba(mocha.text.r, mocha.text.g, mocha.text.b, isHovered ? 0.15 : 0.05)
                     
                     y: (parent.height - barWindow.barHeight) / 2
                     height: barWindow.barHeight
                     
-                    width: centerLayout.implicitWidth + barWindow.s(36)
-                    Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.OutExpo } }
+                    width: centerLayout.implicitWidth + barWindow.s(48)
+                    Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.OutQuint } }
                     
                     property real pureCenter: (parent.width - width) / 2
                     property real minCenterDefaultX: mediaBox.defaultX + mediaBox.width + (mediaBox.width > 0 ? barWindow.s(4) : 0)
@@ -1049,36 +1049,85 @@ Variants {
                         id: centerMouse
                         anchors.fill: parent
                         hoverEnabled: true
-                        onClicked: Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/qs_manager.sh toggle calendar"])
+                        onClicked: Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/qs_manager.sh toggle music"])
                     }
 
                     RowLayout {
                         id: centerLayout
                         anchors.centerIn: parent
-                        spacing: barWindow.s(24)
+                        spacing: barWindow.s(16)
 
-                        ColumnLayout {
-                            spacing: -2
-                            Text { text: barWindow.timeStr; Layout.alignment: Qt.AlignLeft; font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(16); font.weight: Font.Black; color: mocha.blue }
-                            Text { text: barWindow.dateStr; Layout.alignment: Qt.AlignLeft; font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(11); font.weight: Font.Bold; color: mocha.subtext0 }
+                        // Time — always visible
+                        Text {
+                            text: barWindow.timeStr
+                            Layout.alignment: Qt.AlignVCenter
+                            font.family: "JetBrains Mono"
+                            font.pixelSize: barWindow.s(16)
+                            font.weight: Font.Black
+                            color: mocha.mauve
                         }
 
+                        // Media — visible only when a track is playing
                         RowLayout {
-                            spacing: barWindow.s(8)
-                            Text { 
-                                text: barWindow.weatherIcon; 
-                                Layout.alignment: Qt.AlignVCenter;
-                                font.family: "Iosevka Nerd Font"; 
-                                font.pixelSize: barWindow.s(24); 
-                                color: Qt.tint(barWindow.weatherHex, Qt.rgba(mocha.mauve.r, mocha.mauve.g, mocha.mauve.b, 0.4)) 
+                            visible: barWindow.isMediaActive
+                            opacity: barWindow.isMediaActive ? 1.0 : 0.0
+                            spacing: barWindow.s(10)
+                            Behavior on opacity { NumberAnimation { duration: 250 } }
+
+                            Text { text: "·"; color: mocha.subtext0; font.pixelSize: barWindow.s(11); Layout.alignment: Qt.AlignVCenter }
+
+                            Rectangle {
+                                width: barWindow.s(22); height: barWindow.s(22); radius: barWindow.s(6)
+                                color: mocha.surface1; clip: true
+                                Image {
+                                    anchors.fill: parent
+                                    source: barWindow.displayArtUrl || ""
+                                    fillMode: Image.PreserveAspectCrop
+                                }
                             }
-                            Text { 
-                                text: barWindow.weatherTemp; 
-                                Layout.alignment: Qt.AlignVCenter;
-                                font.family: "JetBrains Mono"; 
-                                font.pixelSize: barWindow.s(17); 
-                                font.weight: Font.Black; 
-                                color: mocha.peach 
+
+                            Text {
+                                text: barWindow.displayTitle
+                                color: mocha.text
+                                font.family: "JetBrains Mono"
+                                font.pixelSize: barWindow.s(12)
+                                font.weight: Font.Bold
+                                elide: Text.ElideRight
+                                Layout.maximumWidth: barWindow.s(160)
+                                Layout.alignment: Qt.AlignVCenter
+                            }
+
+                            Row {
+                                spacing: barWindow.s(6)
+                                Item {
+                                    width: barWindow.s(20); height: barWindow.s(20); anchors.verticalCenter: parent.verticalCenter
+                                    Text {
+                                        anchors.centerIn: parent; text: "󰒮"; font.family: "Iosevka Nerd Font"
+                                        font.pixelSize: barWindow.s(20); color: prevNotchMouse.containsMouse ? mocha.text : mocha.overlay2
+                                        Behavior on color { ColorAnimation { duration: 150 } }
+                                    }
+                                    MouseArea { id: prevNotchMouse; hoverEnabled: true; anchors.fill: parent; onClicked: Quickshell.execDetached(["playerctl", "--player=spotify,firefox,chromium,jellyfin,%any", "previous"]) }
+                                }
+                                Item {
+                                    width: barWindow.s(24); height: barWindow.s(24); anchors.verticalCenter: parent.verticalCenter
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: barWindow.musicData.status === "Playing" ? "󰏤" : "󰐊"
+                                        font.family: "Iosevka Nerd Font"; font.pixelSize: barWindow.s(24)
+                                        color: playNotchMouse.containsMouse ? mocha.green : mocha.text
+                                        Behavior on color { ColorAnimation { duration: 150 } }
+                                    }
+                                    MouseArea { id: playNotchMouse; hoverEnabled: true; anchors.fill: parent; onClicked: Quickshell.execDetached(["playerctl", "--player=spotify,firefox,chromium,jellyfin,%any", "play-pause"]) }
+                                }
+                                Item {
+                                    width: barWindow.s(20); height: barWindow.s(20); anchors.verticalCenter: parent.verticalCenter
+                                    Text {
+                                        anchors.centerIn: parent; text: "󰒭"; font.family: "Iosevka Nerd Font"
+                                        font.pixelSize: barWindow.s(20); color: nextNotchMouse.containsMouse ? mocha.text : mocha.overlay2
+                                        Behavior on color { ColorAnimation { duration: 150 } }
+                                    }
+                                    MouseArea { id: nextNotchMouse; hoverEnabled: true; anchors.fill: parent; onClicked: Quickshell.execDetached(["playerctl", "--player=spotify,firefox,chromium,jellyfin,%any", "next"]) }
+                                }
                             }
                         }
                     }
@@ -1412,6 +1461,42 @@ Variants {
                                     }
                                 }
                                 MouseArea { id: volMouse; hoverEnabled: true; anchors.fill: parent; onClicked: Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/qs_manager.sh toggle volume"]) }
+                            }
+
+                            // Theme picker button
+                            Rectangle {
+                                id: themeBtn
+                                property bool isHovered: themeBtnMouse.containsMouse
+                                height: sysLayout.pillHeight; radius: barWindow.s(10)
+                                color: isHovered ? Qt.rgba(mocha.surface1.r, mocha.surface1.g, mocha.surface1.b, 0.6) : Qt.rgba(mocha.surface0.r, mocha.surface0.g, mocha.surface0.b, 0.4)
+                                width: themeBtnRow.implicitWidth + barWindow.s(20)
+                                Behavior on color { ColorAnimation { duration: 200 } }
+                                Row {
+                                    id: themeBtnRow
+                                    anchors.centerIn: parent
+                                    spacing: barWindow.s(6)
+                                    Text { anchors.verticalCenter: parent.verticalCenter; text: "󰏘"; font.family: "Iosevka Nerd Font"; font.pixelSize: barWindow.s(16); color: themeBtn.isHovered ? mocha.text : mocha.overlay2 }
+                                    Text { anchors.verticalCenter: parent.verticalCenter; text: "Theme"; font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(12); font.weight: Font.Bold; color: mocha.text }
+                                }
+                                MouseArea { id: themeBtnMouse; hoverEnabled: true; anchors.fill: parent; onClicked: Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/qs_manager.sh toggle theme"]) }
+                            }
+
+                            // Quick Settings button
+                            Rectangle {
+                                id: qsBtn
+                                property bool isHovered: qsBtnMouse.containsMouse
+                                height: sysLayout.pillHeight; radius: barWindow.s(10)
+                                color: isHovered ? Qt.rgba(mocha.surface1.r, mocha.surface1.g, mocha.surface1.b, 0.6) : Qt.rgba(mocha.surface0.r, mocha.surface0.g, mocha.surface0.b, 0.4)
+                                width: qsBtnRow.implicitWidth + barWindow.s(20)
+                                Behavior on color { ColorAnimation { duration: 200 } }
+                                Row {
+                                    id: qsBtnRow
+                                    anchors.centerIn: parent
+                                    spacing: barWindow.s(6)
+                                    Text { anchors.verticalCenter: parent.verticalCenter; text: "⊞"; font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(16); color: qsBtn.isHovered ? mocha.text : mocha.overlay2 }
+                                    Text { anchors.verticalCenter: parent.verticalCenter; text: "Settings"; font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(12); font.weight: Font.Bold; color: mocha.text }
+                                }
+                                MouseArea { id: qsBtnMouse; hoverEnabled: true; anchors.fill: parent; onClicked: Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/qs_manager.sh toggle quicksettings"]) }
                             }
 
                         }
