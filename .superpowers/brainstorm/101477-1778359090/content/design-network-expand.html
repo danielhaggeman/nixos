@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Network Tile — Expandable</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1a1b26; font-family: 'JetBrains Mono','Fira Mono',monospace;
+    color: #f8f8f2; min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; padding: 40px 24px;
+  }
+  h2 { font-size: 14px; color: #6272a4; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+  .subtitle { font-size: 11px; color: #44475a; margin-bottom: 28px; }
+
+  /* ── PANEL SHELL ── */
+  .panel {
+    background: #1e1f29; border: 1px solid #44475a40; border-radius: 16px;
+    width: 340px; padding: 14px; box-shadow: 0 8px 32px #00000090;
+  }
+  .panel-title { font-size: 11px; color: #6272a4; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+  /* ── TILES ── */
+  .tile-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+
+  /* simple toggle tile */
+  .qs-tile {
+    background: #282a36; border-radius: 12px; padding: 11px 13px;
+    cursor: pointer; border: 1px solid transparent; transition: background .15s;
+    display: flex; align-items: center; gap: 10px; user-select: none;
+  }
+  .qs-tile:hover { background: #44475a; }
+  .qs-tile.on { background: #bd93f920; border-color: #bd93f960; }
+  .qs-tile.on .tile-name { color: #bd93f9; }
+  .tile-icon { font-size: 17px; }
+  .tile-text { flex: 1; }
+  .tile-name { font-size: 11px; font-weight: bold; color: #f8f8f2; }
+  .tile-sub { font-size: 10px; color: #6272a4; margin-top: 1px; }
+
+  /* ── ETHERNET EXPANDABLE ── */
+  .eth-wrap { border-radius: 12px; overflow: hidden; border: 1px solid transparent; transition: border-color .2s; }
+  .eth-wrap.expanded { border-color: #8be9fd40; }
+
+  .eth-header {
+    background: #282a36; padding: 11px 13px;
+    cursor: pointer; display: flex; align-items: center; gap: 10px;
+    transition: background .15s; user-select: none;
+  }
+  .eth-header:hover { background: #44475a; }
+  .eth-chevron {
+    margin-left: auto; font-size: 10px; color: #6272a4;
+    transition: transform .25s; display: inline-block;
+  }
+  .eth-wrap.expanded .eth-chevron { transform: rotate(180deg); }
+  .eth-status { font-size: 8px; padding: 2px 7px; border-radius: 4px; background: #50fa7b20; color: #50fa7b; font-weight: bold; margin-left: 4px; }
+
+  /* connections list */
+  .eth-body {
+    background: #11111b; max-height: 0; overflow: hidden;
+    transition: max-height .35s cubic-bezier(.4,0,.2,1);
+  }
+  .eth-wrap.expanded .eth-body { max-height: 600px; }
+  .eth-inner { padding: 10px; }
+
+  .conn-item {
+    border-radius: 10px; padding: 10px 12px; cursor: pointer;
+    border: 1px solid transparent; transition: all .15s; margin-bottom: 6px;
+    background: #282a36;
+  }
+  .conn-item:hover { border-color: #44475a; background: #2f3045; }
+  .conn-item.active { border-color: #8be9fd50; background: #8be9fd08; }
+  .conn-item.active .conn-name { color: #8be9fd; }
+  .conn-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .conn-name { font-size: 11px; font-weight: bold; color: #f8f8f2; }
+  .conn-ip { font-size: 10px; color: #6272a4; font-family: monospace; }
+  .conn-badge { font-size: 9px; padding: 1px 6px; border-radius: 4px; }
+  .conn-badge.active { background: #50fa7b20; color: #50fa7b; }
+  .conn-badge.saved { background: #44475a; color: #6272a4; }
+
+  /* ── IP EDITOR ── */
+  .ip-editor {
+    background: #1a1b26; border-radius: 10px; border: 1px solid #44475a40;
+    overflow: hidden; max-height: 0; opacity: 0;
+    transition: max-height .3s cubic-bezier(.4,0,.2,1), opacity .2s;
+    margin-top: 6px;
+  }
+  .ip-editor.open { max-height: 400px; opacity: 1; }
+  .ip-inner { padding: 12px; }
+
+  /* DHCP toggle */
+  .dhcp-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .dhcp-label { font-size: 11px; color: #f8f8f2; }
+  .toggle-switch {
+    width: 36px; height: 20px; border-radius: 10px; background: #44475a;
+    position: relative; cursor: pointer; transition: background .2s; flex-shrink: 0;
+  }
+  .toggle-switch.on { background: #8be9fd; }
+  .toggle-knob {
+    position: absolute; top: 3px; left: 3px; width: 14px; height: 14px;
+    border-radius: 50%; background: #f8f8f2; transition: left .2s;
+  }
+  .toggle-switch.on .toggle-knob { left: 19px; }
+
+  .field-label { font-size: 9px; color: #6272a4; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 4px; margin-top: 10px; }
+  .field-label:first-of-type { margin-top: 0; }
+
+  .ip-input {
+    width: 100%; background: #282a36; border: 1px solid #44475a;
+    border-radius: 8px; padding: 7px 10px; font-size: 11px; color: #f8f8f2;
+    font-family: 'JetBrains Mono', monospace; outline: none;
+    transition: border-color .15s;
+  }
+  .ip-input:focus { border-color: #8be9fd80; }
+  .ip-input:disabled { opacity: .4; cursor: not-allowed; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+  .save-btn {
+    width: 100%; margin-top: 12px; padding: 8px; border-radius: 8px;
+    background: #8be9fd20; border: 1px solid #8be9fd60; color: #8be9fd;
+    font-size: 11px; font-family: inherit; cursor: pointer; transition: all .15s;
+  }
+  .save-btn:hover { background: #8be9fd30; }
+
+  /* divider */
+  .eth-divider { height: 1px; background: #44475a20; margin: 6px 0; }
+
+  .add-conn {
+    display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+    color: #6272a4; font-size: 10px; cursor: pointer; border-radius: 8px;
+    transition: color .15s, background .15s; user-select: none;
+  }
+  .add-conn:hover { color: #8be9fd; background: #8be9fd08; }
+</style>
+</head>
+<body>
+
+<h2>Network — Expandable Tile</h2>
+<p class="subtitle">Click the Ethernet tile to expand · Click a connection to edit IP</p>
+
+<div class="panel">
+  <div class="panel-title">Quick Settings</div>
+
+  <div class="tile-group">
+    <!-- Wi-Fi toggle -->
+    <div class="qs-tile on" onclick="this.classList.toggle('on')">
+      <div class="tile-icon">📶</div>
+      <div class="tile-text">
+        <div class="tile-name">Wi-Fi</div>
+        <div class="tile-sub">Fibernet-IA · 192.168.10.241</div>
+      </div>
+    </div>
+
+    <!-- Bluetooth toggle -->
+    <div class="qs-tile on" onclick="this.classList.toggle('on')">
+      <div class="tile-icon">✦</div>
+      <div class="tile-text">
+        <div class="tile-name">Bluetooth</div>
+        <div class="tile-sub">JBL Tune 720BT</div>
+      </div>
+    </div>
+
+    <!-- Ethernet — expandable -->
+    <div class="eth-wrap" id="ethWrap">
+      <div class="eth-header" onclick="toggleEth()">
+        <div class="tile-icon">🔌</div>
+        <div class="tile-text">
+          <div class="tile-name">
+            Ethernet
+            <span class="eth-status">connected</span>
+          </div>
+          <div class="tile-sub" id="ethSub">eno1 · 192.168.10.241/24</div>
+        </div>
+        <span class="eth-chevron">▼</span>
+      </div>
+
+      <div class="eth-body">
+        <div class="eth-inner">
+
+          <!-- Connection: Fibernet (active) -->
+          <div class="conn-item active" id="conn-fibernet" onclick="toggleEditor('fibernet')">
+            <div class="conn-top">
+              <div class="conn-name">Fibernet-Home</div>
+              <span class="conn-badge active">active</span>
+            </div>
+            <div class="conn-ip">192.168.10.241 / 24 · GW 192.168.10.1</div>
+
+            <!-- IP Editor -->
+            <div class="ip-editor" id="editor-fibernet">
+              <div class="ip-inner">
+                <div class="dhcp-row">
+                  <div class="dhcp-label">DHCP (automatic)</div>
+                  <div class="toggle-switch" id="dhcpToggle" onclick="toggleDHCP(event)">
+                    <div class="toggle-knob"></div>
+                  </div>
+                </div>
+
+                <div class="field-label">IP Address</div>
+                <input class="ip-input" id="ipField" type="text" value="192.168.10.241">
+
+                <div class="field-row">
+                  <div>
+                    <div class="field-label">Subnet Mask</div>
+                    <input class="ip-input" id="subnetField" type="text" value="255.255.255.0">
+                  </div>
+                  <div>
+                    <div class="field-label">Prefix</div>
+                    <input class="ip-input" type="text" value="24" style="width:100%;">
+                  </div>
+                </div>
+
+                <div class="field-label">Gateway</div>
+                <input class="ip-input" id="gwField" type="text" value="192.168.10.1">
+
+                <div class="field-row">
+                  <div>
+                    <div class="field-label">DNS Primary</div>
+                    <input class="ip-input" type="text" value="1.1.1.1">
+                  </div>
+                  <div>
+                    <div class="field-label">DNS Secondary</div>
+                    <input class="ip-input" type="text" value="8.8.8.8">
+                  </div>
+                </div>
+
+                <button class="save-btn" onclick="saveConn(event)">Apply via nmcli</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="eth-divider"></div>
+
+          <!-- Saved connection -->
+          <div class="conn-item" id="conn-work" onclick="toggleEditor('work')">
+            <div class="conn-top">
+              <div class="conn-name">Work-Static</div>
+              <span class="conn-badge saved">saved</span>
+            </div>
+            <div class="conn-ip">10.0.0.50 / 24 · GW 10.0.0.1</div>
+
+            <div class="ip-editor" id="editor-work">
+              <div class="ip-inner">
+                <div class="dhcp-row">
+                  <div class="dhcp-label">DHCP (automatic)</div>
+                  <div class="toggle-switch" onclick="toggleDHCP(event)">
+                    <div class="toggle-knob"></div>
+                  </div>
+                </div>
+
+                <div class="field-label">IP Address</div>
+                <input class="ip-input" type="text" value="10.0.0.50">
+
+                <div class="field-row">
+                  <div>
+                    <div class="field-label">Subnet Mask</div>
+                    <input class="ip-input" type="text" value="255.255.255.0">
+                  </div>
+                  <div>
+                    <div class="field-label">Prefix</div>
+                    <input class="ip-input" type="text" value="24" style="width:100%;">
+                  </div>
+                </div>
+
+                <div class="field-label">Gateway</div>
+                <input class="ip-input" type="text" value="10.0.0.1">
+
+                <div class="field-row">
+                  <div>
+                    <div class="field-label">DNS Primary</div>
+                    <input class="ip-input" type="text" value="1.1.1.1">
+                  </div>
+                  <div>
+                    <div class="field-label">DNS Secondary</div>
+                    <input class="ip-input" type="text" value="8.8.8.8">
+                  </div>
+                </div>
+
+                <button class="save-btn" onclick="saveConn(event)">Apply via nmcli</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="eth-divider"></div>
+
+          <div class="add-conn">
+            <span style="font-size:14px;">＋</span> Add connection
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let ethOpen = false;
+let openEditor = null;
+let dhcpOn = false;
+
+function toggleEth() {
+  ethOpen = !ethOpen;
+  document.getElementById('ethWrap').classList.toggle('expanded', ethOpen);
+  if (!ethOpen) { closeEditor(); }
+}
+
+function toggleEditor(id) {
+  if (openEditor === id) { closeEditor(); return; }
+  closeEditor();
+  openEditor = id;
+  document.getElementById('editor-' + id).classList.add('open');
+}
+
+function closeEditor() {
+  if (openEditor) {
+    document.getElementById('editor-' + openEditor).classList.remove('open');
+    openEditor = null;
+  }
+}
+
+function toggleDHCP(e) {
+  e.stopPropagation();
+  const sw = e.currentTarget;
+  sw.classList.toggle('on');
+  const isDHCP = sw.classList.contains('on');
+  // disable fields in same editor
+  const editor = sw.closest('.ip-editor');
+  editor.querySelectorAll('.ip-input').forEach(f => { f.disabled = isDHCP; });
+}
+
+function saveConn(e) {
+  e.stopPropagation();
+  const btn = e.currentTarget;
+  btn.textContent = '✓ Applied';
+  btn.style.background = '#50fa7b20';
+  btn.style.borderColor = '#50fa7b60';
+  btn.style.color = '#50fa7b';
+  setTimeout(() => {
+    btn.textContent = 'Apply via nmcli';
+    btn.style.background = '';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+  }, 1800);
+}
+</script>
+</body>
+</html>

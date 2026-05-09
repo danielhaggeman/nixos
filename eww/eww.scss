@@ -1,0 +1,90 @@
+// Media Island — Dracula glass, pywal accent support
+
+$bg:      rgba(24, 25, 38, 0.92);
+$border:  rgba(189, 147, 249, 0.22);
+$purple:  #bd93f9;
+$pink:    #ff79c6;
+$green:   #50fa7b;
+$comment: #6272a4;
+$fg:      #f8f8f2;
+$muted:   #44475a;
+$dark:    #1e1e2e;
+
+* { all: unset; }
+
+.island-outer { background: transparent; }
+
+// pill
+.pill {
+  background: $bg;
+  border: 1px solid $border;
+  border-radius: 0 0 16px 16px;
+  padding: 5px 14px;
+  min-width: 160px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.55);
+}
+.pill-art    { border-radius: 4px; min-width: 20px; min-height: 20px; }
+.pill-status { color: $comment; font-size: 11px; font-family: "FiraCode Nerd Font Mono"; }
+.pill-title  { color: $fg; font-family: "Fira Sans"; font-size: 12px; font-style: italic; }
+.pill-playing .pill-status { color: $green; }
+
+// expanded
+.island-body {
+  background: $bg;
+  border: 1px solid $border;
+  border-top: none;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.65);
+}
+.expanded { padding: 16px; }
+
+// album art
+.art-wrap { min-width: 140px; min-height: 140px; }
+.art {
+  border-radius: 50%;
+  border: 3px solid rgba(189,147,249,0.35);
+  min-width: 140px;
+  min-height: 140px;
+}
+
+// track info
+.track-title  { color: $fg;      font-family: "Fira Sans"; font-size: 15px; font-weight: bold; }
+.track-artist { color: $comment; font-family: "Fira Sans"; font-size: 12px; }
+.device-icon  { color: $purple;  font-family: "FiraCode Nerd Font Mono"; font-size: 12px; }
+.device-name  { color: $muted;   font-family: "Fira Sans"; font-size: 11px; }
+
+// progress
+.progress-bar {
+  trough   { background: $muted;  border-radius: 4px; min-height: 4px; }
+  highlight{ background: $purple; border-radius: 4px; }
+  slider   { background: $fg; border-radius: 50%; min-width: 12px; min-height: 12px; margin: -4px 0; }
+}
+.time-label { color: $comment; font-family: "FiraCode Nerd Font Mono"; font-size: 10px; margin-top: 2px; }
+
+// controls
+.ctrl-btn {
+  color: $comment; font-size: 16px; padding: 6px 14px; border-radius: 8px;
+  &:hover { color: $purple; background: rgba(189,147,249,0.12); }
+}
+.play-btn { font-size: 18px; padding: 8px 20px; border-radius: 50%; }
+.btn-playing { color: $dark; background: $purple; &:hover { background: $pink; } }
+.btn-paused  { color: $purple; background: rgba(189,147,249,0.15); &:hover { background: rgba(189,147,249,0.25); } }
+
+// EQ
+.eq-section    { border-top: 1px solid $border; padding-top: 14px; }
+.eq-title      { color: $fg; font-family: "Fira Sans"; font-size: 13px; font-weight: bold; }
+.eq-preset-label { color: $purple; font-family: "Fira Sans"; font-size: 11px; }
+.eq-sliders    { min-height: 120px; }
+.eq-band       { min-width: 32px; }
+.eq-slider {
+  trough   { background: $muted;  border-radius: 4px; min-width: 4px; }
+  highlight{ background: $purple; border-radius: 4px; }
+  slider   { background: $fg; border-radius: 50%; min-width: 10px; min-height: 10px; margin: 0 -3px; }
+}
+.eq-freq       { color: $comment; font-family: "FiraCode Nerd Font Mono"; font-size: 9px; }
+.preset-btn {
+  color: $comment; font-family: "Fira Sans"; font-size: 11px;
+  padding: 4px 8px; border-radius: 6px; border: 1px solid $muted;
+  &:hover { color: $fg; border-color: $purple; }
+}
+.preset-active { color: $dark; background: $purple; border-color: $purple; }

@@ -1,0 +1,28 @@
+{"type":"server-started","port":54077,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:54077","screen_dir":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content","state_dir":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/state"}
+{"type":"screen-added","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-overview.html"}
+{"type":"screen-added","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-media.html"}
+{"type":"screen-added","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-topbar-v2.html"}
+{"source":"user-event","type":"click","text":"A\n    Notification panelBell click shows time + notifications","choice":"a","id":null,"timestamp":1778359738231}
+{"source":"user-event","type":"click","text":"A\n    Notification panelBell click shows time + notifications","choice":"a","id":null,"timestamp":1778359738910}
+{"source":"user-event","type":"click","text":"A\n    Notification panelBell click shows time + notifications","choice":"a","id":null,"timestamp":1778359739491}
+{"source":"user-event","type":"click","text":"B\n    Quiet right-side timeSmall HH:MM tucked after volume","choice":"b","id":null,"timestamp":1778359740746}
+{"source":"user-event","type":"click","text":"C\n    Calendar popup onlyNo clock on bar at all","choice":"c","id":null,"timestamp":1778359741209}
+{"source":"user-event","type":"click","text":"B\n    Quiet right-side timeSmall HH:MM tucked after volume","choice":"b","id":null,"timestamp":1778359741612}
+{"source":"user-event","type":"click","text":"A\n    Notification panelBell click shows time + notifications","choice":"a","id":null,"timestamp":1778359741909}
+{"type":"screen-added","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-notch.html"}
+{"type":"screen-added","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-notch-interactive.html"}
+{"type":"screen-updated","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-notch-interactive.html"}
+{"type":"screen-updated","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-notch-interactive.html"}
+{"type":"screen-added","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-quicksettings.html"}
+{"type":"screen-updated","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-quicksettings.html"}
+{"type":"screen-updated","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-quicksettings.html"}
+{"type":"screen-updated","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-quicksettings.html"}
+{"type":"screen-updated","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-quicksettings.html"}
+{"type":"screen-updated","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-quicksettings.html"}
+{"type":"screen-updated","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-quicksettings.html"}
+{"type":"screen-added","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-qs-customizable.html"}
+{"type":"screen-updated","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-qs-customizable.html"}
+{"type":"screen-updated","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-qs-customizable.html"}
+{"type":"screen-added","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-network-expand.html"}
+{"type":"screen-updated","file":"/home/daniel/dotfiles/.superpowers/brainstorm/101477-1778359090/content/design-qs-customizable.html"}
+{"type":"server-stopped","reason":"idle timeout"}

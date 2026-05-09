@@ -1,0 +1,145 @@
+;; ============================================================
+;; Media Island — ilyamiro scripts + Dracula/wal theming
+;; ============================================================
+
+;; ── data ─────────────────────────────────────────────────────
+(defpoll music :interval "1s"
+  :initial '{"title":"Nothing Playing","artist":"","status":"Stopped","percent":0,"lengthStr":"0:00","positionStr":"0:00","timeStr":"0:00 / 0:00","source":"","playerName":"","blur":"/tmp/eww_covers/placeholder_blank.png","grad":"linear-gradient(45deg,#bd93f9,#ff79c6)","textColor":"#f8f8f2","deviceIcon":"","deviceName":"Speaker","artUrl":"/tmp/eww_covers/placeholder_blank.png"}'
+  "~/dotfiles/eww/scripts/music_info.sh")
+
+(defpoll eq_state :interval "2s"
+  :initial '{"b1":0,"b2":0,"b3":0,"b4":0,"b5":0,"b6":0,"b7":0,"b8":0,"b9":0,"b10":0,"preset":"Flat","pending":false}'
+  "~/dotfiles/eww/scripts/equalizer.sh get")
+
+;; ── state ─────────────────────────────────────────────────────
+(defvar open false)
+
+;; ── collapsed pill ───────────────────────────────────────────
+(defwidget pill []
+  (eventbox :onclick "eww update open=${!open}"
+    (box :class "pill ${music.status == 'Playing' ? 'pill-playing' : 'pill-idle'}"
+         :space-evenly false :spacing 8
+      (image :path {music.artUrl} :image-width 20 :image-height 20
+             :class "pill-art")
+      (label :class "pill-status"
+             :text {music.status == "Playing" ? "▶" : music.status == "Paused" ? "⏸" : "—"})
+      (label :class "pill-title" :limit-width 28 :truncate true
+             :text {music.title != "Nothing Playing" ? music.title : "No music"}))))
+
+;; ── album art ────────────────────────────────────────────────
+(defwidget album_art []
+  (box :class "art-wrap"
+    (image :path {music.artUrl}
+           :image-width 140 :image-height 140
+           :class "art ${music.status == 'Playing' ? 'art-spin' : ''}")))
+
+;; ── track info ───────────────────────────────────────────────
+(defwidget track_info []
+  (box :orientation "v" :space-evenly false :spacing 4 :hexpand true
+    (label :class "track-title" :xalign 0 :limit-width 22 :truncate true
+           :text {music.title})
+    (label :class "track-artist" :xalign 0 :limit-width 26 :truncate true
+           :text {music.artist != "" ? music.artist : "Unknown Artist"})
+    (box :class "device-row" :space-evenly false :spacing 6
+      (label :class "device-icon" :text {music.deviceIcon})
+      (label :class "device-name" :limit-width 18 :truncate true
+             :text {music.deviceName}))))
+
+;; ── progress ─────────────────────────────────────────────────
+(defwidget progress_row []
+  (box :orientation "v" :space-evenly false :spacing 2
+    (scale :class "progress-bar" :min 0 :max 101 :active true
+           :value {music.percent}
+           :onchange "~/dotfiles/eww/scripts/player_control.sh seek {} ${music.length} ${music.playerName}")
+    (box :space-evenly false
+      (label :class "time-label" :xalign 0 :hexpand true :text {music.positionStr})
+      (label :class "time-label" :xalign 1 :hexpand true :text {music.lengthStr}))))
+
+;; ── controls ─────────────────────────────────────────────────
+(defwidget controls []
+  (box :class "controls" :space-evenly true
+    (button :class "ctrl-btn"
+            :onclick "~/dotfiles/eww/scripts/player_control.sh prev _ _ ${music.playerName}"
+            "⏮")
+    (button :class "play-btn ${music.status == 'Playing' ? 'btn-playing' : 'btn-paused'}"
+            :onclick "~/dotfiles/eww/scripts/player_control.sh play-pause _ _ ${music.playerName}"
+            {music.status == "Playing" ? "⏸" : "▶"})
+    (button :class "ctrl-btn"
+            :onclick "~/dotfiles/eww/scripts/player_control.sh next _ _ ${music.playerName}"
+            "⏭")))
+
+;; ── single EQ slider ─────────────────────────────────────────
+(defwidget eq_band [band label]
+  (box :orientation "v" :space-evenly false :spacing 2 :class "eq-band"
+    (scale :orientation "v" :flipped true :min -12 :max 12 :active true
+           :class "eq-slider"
+           :value {eq_state["b${band}"]}
+           :onchange "~/dotfiles/eww/scripts/equalizer.sh set_band ${band} {}")
+    (label :class "eq-freq" :text label)))
+
+;; ── EQ section ───────────────────────────────────────────────
+(defwidget eq_section []
+  (box :orientation "v" :space-evenly false :spacing 10 :class "eq-section"
+    (box :space-evenly false
+      (label :class "eq-title" :xalign 0 :hexpand true :text "Equalizer")
+      (label :class "eq-preset-label"
+             :text {eq_state.preset}))
+    (box :class "eq-sliders" :space-evenly true :spacing 4
+      (eq_band :band "1" :label "31")
+      (eq_band :band "2" :label "63")
+      (eq_band :band "3" :label "125")
+      (eq_band :band "4" :label "250")
+      (eq_band :band "5" :label "500")
+      (eq_band :band "6" :label "1k")
+      (eq_band :band "7" :label "2k")
+      (eq_band :band "8" :label "4k")
+      (eq_band :band "9" :label "8k")
+      (eq_band :band "10" :label "16k"))
+    (box :class "eq-presets" :space-evenly true :spacing 4
+      (button :class "preset-btn ${eq_state.preset == 'Flat' ? 'preset-active' : ''}"
+              :onclick "~/dotfiles/eww/scripts/equalizer.sh preset Flat" "Flat")
+      (button :class "preset-btn ${eq_state.preset == 'Bass' ? 'preset-active' : ''}"
+              :onclick "~/dotfiles/eww/scripts/equalizer.sh preset Bass" "Bass")
+      (button :class "preset-btn ${eq_state.preset == 'Treble' ? 'preset-active' : ''}"
+              :onclick "~/dotfiles/eww/scripts/equalizer.sh preset Treble" "Treble")
+      (button :class "preset-btn ${eq_state.preset == 'Vocal' ? 'preset-active' : ''}"
+              :onclick "~/dotfiles/eww/scripts/equalizer.sh preset Vocal" "Vocal")
+      (button :class "preset-btn ${eq_state.preset == 'Pop' ? 'preset-active' : ''}"
+              :onclick "~/dotfiles/eww/scripts/equalizer.sh preset Pop" "Pop")
+      (button :class "preset-btn ${eq_state.preset == 'Rock' ? 'preset-active' : ''}"
+              :onclick "~/dotfiles/eww/scripts/equalizer.sh preset Rock" "Rock")
+      (button :class "preset-btn ${eq_state.preset == 'Jazz' ? 'preset-active' : ''}"
+              :onclick "~/dotfiles/eww/scripts/equalizer.sh preset Jazz" "Jazz")
+      (button :class "preset-btn ${eq_state.preset == 'Classic' ? 'preset-active' : ''}"
+              :onclick "~/dotfiles/eww/scripts/equalizer.sh preset Classic" "Classic"))))
+
+;; ── expanded panel ───────────────────────────────────────────
+(defwidget expanded []
+  (box :orientation "v" :class "expanded" :space-evenly false :spacing 14
+    (box :space-evenly false :spacing 16 :class "media-top"
+      (album_art)
+      (box :orientation "v" :space-evenly false :spacing 10 :hexpand true
+        (track_info)
+        (progress_row)
+        (controls)))
+    (eq_section)))
+
+;; ── island wrapper ───────────────────────────────────────────
+(defwidget island []
+  (box :orientation "v" :halign "center" :class "island-outer" :space-evenly false
+    (pill)
+    (revealer :transition "slidedown" :reveal open :duration "280ms"
+      (box :class "island-body"
+        (expanded)))))
+
+;; ── window ───────────────────────────────────────────────────
+(defwindow media_island
+  :monitor 0
+  :geometry (geometry :x "0" :y "0"
+                      :anchor "top center"
+                      :width "520px" :height "600px")
+  :stacking "overlay"
+  :exclusive false
+  :focusable false
+  :namespace "eww-island"
+  (island))

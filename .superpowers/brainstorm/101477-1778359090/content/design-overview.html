@@ -1,0 +1,178 @@
+<h2>Quickshell Pookie — Design Overview</h2>
+<p class="subtitle">Approach A: Direct port from ilyamiro/nixos-configuration, Dracula-themed, desktop-adapted</p>
+
+<div class="section">
+  <h3>Top Bar (full width, both monitors)</h3>
+  <div class="mockup">
+    <div class="mockup-header">TopBar.qml — Dracula Theme</div>
+    <div class="mockup-body" style="background:#282a36;border-radius:8px;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;font-family:monospace;font-size:13px;gap:12px;">
+      <!-- Left -->
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="background:#44475a;border-radius:8px;padding:5px 10px;color:#f8f8f2;cursor:pointer;">🔍</div>
+        <div style="background:#44475a;border-radius:8px;padding:5px 10px;color:#f8f8f2;">🔔</div>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <div style="background:#bd93f9;border-radius:6px;padding:4px 10px;color:#282a36;font-weight:bold;">1</div>
+          <div style="background:#44475a;border-radius:6px;padding:4px 10px;color:#6272a4;">2</div>
+          <div style="background:#44475a;border-radius:6px;padding:4px 10px;color:#6272a4;">3</div>
+          <div style="background:#44475a;border-radius:6px;padding:4px 10px;color:#6272a4;">4</div>
+          <div style="background:#44475a;border-radius:6px;padding:4px 10px;color:#6272a4;">5</div>
+          <div style="background:#44475a;border-radius:6px;padding:4px 10px;color:#6272a4;">6</div>
+          <div style="background:#44475a;border-radius:6px;padding:4px 10px;color:#6272a4;">7</div>
+          <div style="background:#44475a;border-radius:6px;padding:4px 10px;color:#6272a4;">8</div>
+        </div>
+      </div>
+      <!-- Center -->
+      <div style="display:flex;align-items:center;gap:16px;color:#f8f8f2;">
+        <div style="text-align:center;">
+          <div style="font-size:15px;font-weight:bold;color:#bd93f9;">11:44:44 PM</div>
+          <div style="font-size:11px;color:#6272a4;">Saturday, May 9</div>
+        </div>
+        <div style="background:#44475a;border-radius:8px;padding:4px 12px;color:#8be9fd;font-size:12px;">⛅ 12.4°C</div>
+      </div>
+      <!-- Right -->
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="background:#44475a;border-radius:8px;padding:4px 10px;color:#f8f8f2;font-size:12px;">✈</div>
+        <div style="background:#44475a;border-radius:8px;padding:4px 12px;color:#f8f8f2;font-size:12px;">⌨ EN</div>
+        <div style="background:#44475a;border-radius:8px;padding:4px 12px;color:#8be9fd;font-size:12px;">▲ Fiber...</div>
+        <div style="background:#bd93f9;border-radius:8px;padding:4px 12px;color:#282a36;font-size:12px;font-weight:bold;">✦ JBL 72...</div>
+        <div style="background:#44475a;border-radius:8px;padding:4px 12px;color:#f8f8f2;font-size:12px;">🔊 45%</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Components In Scope</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div style="background:#282a36;border-radius:8px;padding:14px;border-left:3px solid #50fa7b;">
+      <div style="color:#50fa7b;font-size:11px;font-weight:bold;text-transform:uppercase;margin-bottom:8px;">✓ Included</div>
+      <div style="color:#f8f8f2;font-size:13px;line-height:1.8;">
+        Top bar (all widgets)<br>
+        App launcher<br>
+        Notifications<br>
+        Calendar + Weather popup<br>
+        Music popup + EQ<br>
+        Network (WiFi + Bluetooth)<br>
+        Volume popup<br>
+        Wallpaper picker (no matugen reload)<br>
+        Focus time tracker<br>
+        Clipboard manager<br>
+        Screenshot overlay<br>
+        Lock screen<br>
+        Quick actions (timer, sys usage)
+      </div>
+    </div>
+    <div style="background:#282a36;border-radius:8px;padding:14px;border-left:3px solid #ff5555;">
+      <div style="color:#ff5555;font-size:11px;font-weight:bold;text-transform:uppercase;margin-bottom:8px;">✗ Removed</div>
+      <div style="color:#f8f8f2;font-size:13px;line-height:1.8;">
+        Battery popup<br>
+        Battery bar widget<br>
+        battery_fetch.sh / battery_wait.sh<br>
+        Matugen color reload on wallpaper change<br>
+        <br>
+        <span style="color:#6272a4;font-size:12px;">Also replacing: waybar + eww (quickshell takes over everything)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Dracula Color Mapping</h3>
+  <div style="background:#282a36;border-radius:8px;padding:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:8px;background:#282a36;border:1px solid #44475a;margin:0 auto 6px;"></div>
+      <div style="color:#f8f8f2;font-size:11px;">base</div>
+      <div style="color:#6272a4;font-size:10px;">#282a36</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:8px;background:#44475a;margin:0 auto 6px;"></div>
+      <div style="color:#f8f8f2;font-size:11px;">surface</div>
+      <div style="color:#6272a4;font-size:10px;">#44475a</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:8px;background:#6272a4;margin:0 auto 6px;"></div>
+      <div style="color:#f8f8f2;font-size:11px;">comment</div>
+      <div style="color:#6272a4;font-size:10px;">#6272a4</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:8px;background:#f8f8f2;margin:0 auto 6px;"></div>
+      <div style="color:#f8f8f2;font-size:11px;">text</div>
+      <div style="color:#6272a4;font-size:10px;">#f8f8f2</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:8px;background:#bd93f9;margin:0 auto 6px;"></div>
+      <div style="color:#f8f8f2;font-size:11px;">purple → mauve</div>
+      <div style="color:#6272a4;font-size:10px;">#bd93f9</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:8px;background:#ff79c6;margin:0 auto 6px;"></div>
+      <div style="color:#f8f8f2;font-size:11px;">pink → pink</div>
+      <div style="color:#6272a4;font-size:10px;">#ff79c6</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:8px;background:#8be9fd;margin:0 auto 6px;"></div>
+      <div style="color:#f8f8f2;font-size:11px;">cyan → sapphire</div>
+      <div style="color:#6272a4;font-size:10px;">#8be9fd</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:8px;background:#50fa7b;margin:0 auto 6px;"></div>
+      <div style="color:#f8f8f2;font-size:11px;">green → green</div>
+      <div style="color:#6272a4;font-size:10px;">#50fa7b</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:8px;background:#ffb86c;margin:0 auto 6px;"></div>
+      <div style="color:#f8f8f2;font-size:11px;">orange → peach</div>
+      <div style="color:#6272a4;font-size:10px;">#ffb86c</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:8px;background:#ff5555;margin:0 auto 6px;"></div>
+      <div style="color:#f8f8f2;font-size:11px;">red → red</div>
+      <div style="color:#6272a4;font-size:10px;">#ff5555</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:8px;background:#f1fa8c;margin:0 auto 6px;"></div>
+      <div style="color:#f8f8f2;font-size:11px;">yellow → yellow</div>
+      <div style="color:#6272a4;font-size:10px;">#f1fa8c</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:8px;background:#1e1f29;border:1px solid #44475a;margin:0 auto 6px;"></div>
+      <div style="color:#f8f8f2;font-size:11px;">mantle</div>
+      <div style="color:#6272a4;font-size:10px;">#1e1f29</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>File Layout</h3>
+  <div style="background:#1e1f29;border-radius:8px;padding:14px;font-family:monospace;font-size:12px;color:#f8f8f2;line-height:1.7;">
+    <span style="color:#bd93f9;">~/dotfiles/hypr/scripts/quickshell/</span><br>
+    ├── Main.qml / Shell.qml / Config.qml<br>
+    ├── TopBar.qml <span style="color:#ff5555;">(battery stripped)</span><br>
+    ├── MatugenColors.qml <span style="color:#50fa7b;">(→ Dracula palette)</span><br>
+    ├── applauncher/ music/ calendar/ network/<br>
+    ├── notifications/ volume/ wallpaper/<br>
+    ├── focustime/ clipboard/ quickactions/<br>
+    ├── monitors/ settings/ updater/<br>
+    └── watchers/ <span style="color:#ff5555;">(battery_* removed)</span><br>
+    <br>
+    <span style="color:#6272a4;"># symlinked to ~/.config/hypr/scripts/quickshell</span><br>
+    <span style="color:#6272a4;"># autostart: exec-once = quickshell in autostart.conf</span><br>
+    <span style="color:#6272a4;"># waybar + eww removed from autostart</span>
+  </div>
+</div>
+
+<div class="section">
+  <h3>NixOS Packages Needed</h3>
+  <div style="background:#282a36;border-radius:8px;padding:14px;font-family:monospace;font-size:13px;color:#f8f8f2;line-height:1.9;">
+    <span style="color:#50fa7b;">quickshell</span> — already installed ✓<br>
+    <span style="color:#50fa7b;">playerctl</span> — media control<br>
+    <span style="color:#50fa7b;">python3</span> — focus time + clipboard + app launcher<br>
+    <span style="color:#50fa7b;">wl-clipboard</span> — clipboard manager<br>
+    <span style="color:#50fa7b;">jq</span> — JSON parsing in shell scripts<br>
+    <span style="color:#50fa7b;">curl</span> — weather API calls<br>
+    <span style="color:#50fa7b;">networkmanager</span> — likely already present<br>
+    <span style="color:#50fa7b;">bluez / bluez-utils</span> — bluetooth<br>
+    <span style="color:#50fa7b;">hyprlock</span> — lock screen<br>
+    <span style="color:#f1fa8c;">OpenWeatherMap API key</span> — you'll enter this in settings
+  </div>
+</div>

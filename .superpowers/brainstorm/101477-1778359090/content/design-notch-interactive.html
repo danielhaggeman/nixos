@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Quickshell Notch — Interactive Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1a1b26;
+    font-family: 'JetBrains Mono', 'Fira Mono', monospace;
+    color: #f8f8f2;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+  }
+
+  /* ── TOP BAR ── */
+  .bar {
+    width: 100%;
+    background: #282a36;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    height: 40px;
+    position: relative;
+    z-index: 10;
+    border-bottom: 1px solid #44475a30;
+  }
+  .bar-left, .bar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .bar-btn {
+    background: #44475a;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #f8f8f2;
+    cursor: pointer;
+    user-select: none;
+    transition: background .15s;
+    white-space: nowrap;
+  }
+  .bar-btn:hover { background: #6272a4; }
+  .bar-btn.active { background: #bd93f9; color: #282a36; font-weight: bold; }
+  .bar-btn.cyan { color: #8be9fd; }
+  .bar-btn.purple { background: #bd93f9; color: #282a36; font-weight: bold; }
+
+  /* ── NOTCH ── */
+  .notch-wrap {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 20;
+  }
+  .notch-pill {
+    background: #11111b;
+    border-radius: 0 0 28px 28px;
+    border: none;
+    padding: 0 48px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    min-width: 340px;
+    justify-content: center;
+    position: relative;
+    /* BoringNotch-style side fades */
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 18%,
+      black 82%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 18%,
+      black 82%,
+      transparent 100%
+    );
+    transition: min-width .35s cubic-bezier(.4,0,.2,1), padding .3s;
+  }
+  .notch-pill.expanded {
+    min-width: 500px;
+    box-shadow: 0 4px 28px #bd93f920;
+  }
+  .notch-time {
+    font-size: 13px;
+    font-weight: bold;
+    color: #bd93f9;
+    letter-spacing: 1px;
+    transition: opacity .2s;
+  }
+  .notch-sep { color: #6272a4; font-size: 11px; }
+  .notch-media {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    transition: opacity .25s, max-width .3s;
+  }
+  .notch-media.visible {
+    opacity: 1;
+    max-width: 280px;
+  }
+  .notch-art {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #bd93f9, #ff79c6);
+    flex-shrink: 0;
+  }
+  .notch-track { font-size: 11px; color: #f8f8f2; }
+  .notch-controls { display: flex; gap: 8px; color: #bd93f9; font-size: 13px; }
+  .notch-controls span { cursor: pointer; transition: color .15s; }
+  .notch-controls span:hover { color: #ff79c6; }
+
+  /* ── EXPANDED PANEL ── */
+  .notch-panel {
+    background: #11111b;
+    border: 1px solid #44475a40;
+    border-top: none;
+    border-radius: 0 0 18px 18px;
+    width: 480px;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height .35s cubic-bezier(.4,0,.2,1), opacity .25s;
+    box-shadow: 0 8px 32px #00000080;
+  }
+  .notch-panel.open {
+    max-height: 340px;
+    opacity: 1;
+  }
+  .panel-inner { padding: 18px 20px 20px; }
+
+  /* album + track */
+  .panel-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .panel-art {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #bd93f9, #ff79c6);
+    box-shadow: 0 0 18px #bd93f940;
+    flex-shrink: 0;
+    animation: spin 8s linear infinite;
+    animation-play-state: paused;
+  }
+  .panel-art.playing { animation-play-state: running; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .panel-title { font-size: 14px; font-weight: bold; color: #f8f8f2; }
+  .panel-artist { font-size: 11px; color: #6272a4; margin-top: 3px; }
+
+  /* progress */
+  .progress-bar {
+    background: #282a36;
+    border-radius: 4px;
+    height: 3px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    position: relative;
+  }
+  .progress-fill {
+    background: linear-gradient(90deg, #bd93f9, #ff79c6);
+    width: 18%;
+    height: 100%;
+    border-radius: 4px;
+    transition: width .1s;
+  }
+  .progress-times {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #6272a4;
+    margin-top: 4px;
+    margin-bottom: 10px;
+  }
+
+  /* controls */
+  .panel-controls {
+    display: flex;
+    justify-content: center;
+    gap: 22px;
+    margin-bottom: 16px;
+    font-size: 18px;
+    color: #6272a4;
+  }
+  .panel-controls .play-btn {
+    background: #bd93f9;
+    border-radius: 50%;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    color: #282a36;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+  }
+  .panel-controls .play-btn:hover { background: #ff79c6; transform: scale(1.08); }
+  .panel-controls span { cursor: pointer; transition: color .15s; line-height: 36px; }
+  .panel-controls span:hover { color: #bd93f9; }
+
+  /* eq label */
+  .eq-label {
+    font-size: 11px;
+    color: #6272a4;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .eq-label span { color: #bd93f9; }
+
+  /* presets */
+  .presets {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+  }
+  .preset {
+    background: #282a36;
+    border-radius: 6px;
+    padding: 5px 4px;
+    text-align: center;
+    font-size: 10px;
+    color: #f8f8f2;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    border: 1px solid transparent;
+  }
+  .preset:hover { border-color: #bd93f940; }
+  .preset.active { background: #bd93f9; color: #282a36; font-weight: bold; }
+
+  /* ── DEMO AREA ── */
+  .demo-area {
+    padding: 40px 24px 24px;
+    width: 100%;
+    max-width: 900px;
+    text-align: center;
+  }
+  .demo-hint {
+    color: #6272a4;
+    font-size: 12px;
+    margin-bottom: 24px;
+  }
+  .toggle-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .toggle-btn {
+    background: #282a36;
+    border: 1px solid #44475a;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 12px;
+    color: #f8f8f2;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+  }
+  .toggle-btn:hover { border-color: #bd93f9; color: #bd93f9; }
+  .toggle-btn.on { background: #bd93f920; border-color: #bd93f9; color: #bd93f9; }
+
+  .info-box {
+    background: #282a36;
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-align: left;
+    margin-top: 24px;
+    font-size: 12px;
+    line-height: 1.8;
+    color: #6272a4;
+    border: 1px solid #44475a30;
+  }
+  .info-box .green { color: #50fa7b; }
+  .info-box .purple { color: #bd93f9; }
+  .info-box .red { color: #ff5555; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="bar">
+  <div class="bar-left">
+    <div class="bar-btn">🔍</div>
+    <div class="bar-btn">🔔</div>
+    <div class="bar-btn active">1</div>
+    <div class="bar-btn">2</div>
+    <div class="bar-btn">3</div>
+    <div class="bar-btn">4</div>
+    <div class="bar-btn">5</div>
+    <div class="bar-btn">6</div>
+    <div class="bar-btn">7</div>
+    <div class="bar-btn">8</div>
+  </div>
+
+  <!-- NOTCH -->
+  <div class="notch-wrap" id="notchWrap">
+    <div class="notch-pill" id="notchPill">
+      <div class="notch-time" id="notchTime">11:44</div>
+      <div class="notch-media" id="notchMedia">
+        <div class="notch-sep">·</div>
+        <div class="notch-art"></div>
+        <div class="notch-track">Jane! — The Long Faces</div>
+        <div class="notch-controls">
+          <span onclick="event.stopPropagation()">⏮</span>
+          <span id="miniPlay" onclick="togglePlay(event)">⏸</span>
+          <span onclick="event.stopPropagation()">⏭</span>
+        </div>
+      </div>
+    </div>
+    <div class="notch-panel" id="notchPanel">
+      <div class="panel-inner">
+        <div class="panel-top">
+          <div class="panel-art" id="panelArt"></div>
+          <div>
+            <div class="panel-title">Jane!</div>
+            <div class="panel-artist">BY The Long Faces</div>
+          </div>
+        </div>
+        <div class="progress-bar" onclick="scrub(event, this)">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-times"><span>0:09</span><span>3:07</span></div>
+        <div class="panel-controls">
+          <span onclick="event.stopPropagation()">⏮</span>
+          <div class="play-btn" id="playBtn" onclick="togglePlay(event)">⏸</div>
+          <span onclick="event.stopPropagation()">⏭</span>
+        </div>
+        <div class="eq-label">Equalizer <span id="presetLabel">Rock</span></div>
+        <div class="presets" id="presets">
+          <div class="preset" onclick="setPreset(this)">Flat</div>
+          <div class="preset" onclick="setPreset(this)">Bass</div>
+          <div class="preset" onclick="setPreset(this)">Treble</div>
+          <div class="preset" onclick="setPreset(this)">Vocal</div>
+          <div class="preset" onclick="setPreset(this)">Pop</div>
+          <div class="preset active" onclick="setPreset(this)">Rock</div>
+          <div class="preset" onclick="setPreset(this)">Jazz</div>
+          <div class="preset" onclick="setPreset(this)">Classic</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bar-right">
+    <div class="bar-btn">⌨ EN</div>
+    <div class="bar-btn cyan">▲ Fibernet</div>
+    <div class="bar-btn purple">✦ JBL 720BT</div>
+    <div class="bar-btn">🔊 45%</div>
+  </div>
+</div>
+
+<!-- DEMO CONTROLS -->
+<div class="demo-area">
+  <div class="demo-hint">↑ Hover the center pill to expand · Use toggles below to try states</div>
+  <div class="toggle-row">
+    <button class="toggle-btn on" id="btnMedia" onclick="toggleMedia()">Media playing</button>
+    <button class="toggle-btn" id="btnIdle" onclick="setIdle()">Idle (no media)</button>
+  </div>
+
+  <div class="info-box">
+    <div class="green">✓ Center pill</div>
+    Shows <span class="purple">HH:MM</span> always. When media plays, collapses show track + controls inline.<br>
+    Hover expands the full music panel (album art, progress, EQ) — drops from bar, closes on hover-lost.<br><br>
+    <div class="green">✓ Weather</div>
+    Moved entirely to the <span class="purple">calendar popup</span> (click the clock area or a dedicated button). Not visible on bar.<br><br>
+    <div class="red">✗ Removed</div>
+    Battery widget, battery watchers, matugen reload on wallpaper change.
+  </div>
+</div>
+
+<script>
+let mediaPlaying = true;
+let isPlaying = true;
+let expanded = false;
+let hoverTimeout;
+
+const pill = document.getElementById('notchPill');
+const panel = document.getElementById('notchPanel');
+const media = document.getElementById('notchMedia');
+const art = document.getElementById('panelArt');
+
+function openPanel() {
+  clearTimeout(hoverTimeout);
+  pill.classList.add('expanded');
+  panel.classList.add('open');
+  expanded = true;
+}
+function closePanel() {
+  hoverTimeout = setTimeout(() => {
+    pill.classList.remove('expanded');
+    panel.classList.remove('open');
+    expanded = false;
+  }, 200);
+}
+
+document.getElementById('notchWrap').addEventListener('mouseenter', openPanel);
+document.getElementById('notchWrap').addEventListener('mouseleave', closePanel);
+
+function toggleMedia() {
+  mediaPlaying = true;
+  document.getElementById('btnMedia').classList.add('on');
+  document.getElementById('btnIdle').classList.remove('on');
+  media.classList.add('visible');
+}
+function setIdle() {
+  mediaPlaying = false;
+  document.getElementById('btnIdle').classList.add('on');
+  document.getElementById('btnMedia').classList.remove('on');
+  media.classList.remove('visible');
+}
+
+function togglePlay(e) {
+  e.stopPropagation();
+  isPlaying = !isPlaying;
+  const icon = isPlaying ? '⏸' : '▶';
+  document.getElementById('playBtn').textContent = icon;
+  document.getElementById('miniPlay').textContent = icon;
+  art.classList.toggle('playing', isPlaying);
+}
+
+function setPreset(el) {
+  document.querySelectorAll('.preset').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('presetLabel').textContent = el.textContent;
+}
+
+function scrub(e, bar) {
+  const rect = bar.getBoundingClientRect();
+  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  document.getElementById('progressFill').style.width = (pct * 100) + '%';
+}
+
+// Clock
+function tick() {
+  const now = new Date();
+  let h = now.getHours(), m = now.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  document.getElementById('notchTime').textContent =
+    h + ':' + String(m).padStart(2,'0') + ' ' + ampm;
+}
+tick(); setInterval(tick, 10000);
+
+// Start with media
+toggleMedia();
+art.classList.add('playing');
+</script>
+</body>
+</html>

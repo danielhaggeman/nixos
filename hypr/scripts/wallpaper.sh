@@ -1,31 +1,27 @@
-#!/bin/bash
-# random-wallpaper-loop.sh
+#!/usr/bin/env bash
+# Usage: wallpaper.sh /path/to/image  OR  wallpaper.sh (random from ~/wallpapers/)
+WALLPAPER_DIR="$HOME/wallpapers"
 
-# Folder containing wallpapers
-WALLPAPER_DIR="$HOME/Pictures/wallpapers"
+if [[ -n "$1" ]]; then
+    WP="$1"
+else
+    WP=$(find "$WALLPAPER_DIR" -type f \( -name "*.jpg" -o -name "*.png" -o -name "*.jpeg" \) 2>/dev/null | shuf -n1)
+fi
+[[ -z "$WP" ]] && echo "No wallpaper found" && exit 1
 
-#kitty
-KITTY_CONFIG="$HOME/.cache/wal/colors-kitty.conf"
+# 1. Set wallpaper
+swww img "$WP" --transition-type grow --transition-pos center --transition-duration 1.2 --transition-fps 60
 
-# Endless loop
-while true; do
-    # Pick a random wallpaper
-    WALLPAPER=$(find "$WALLPAPER_DIR" -type f | shuf -n 1)
+# 2. Generate wal colors
+wal -i "$WP" -n -q 2>/dev/null
 
-    # Apply the wallpaper with swww
-    swww img "$WALLPAPER" --transition-fps 60 --transition-step 255 --transition-type any
+# 3. Reload waybar
+pkill waybar; sleep 0.3; WAYLAND_DISPLAY=wayland-1 waybar &>/dev/null &
 
-    # Generate a color scheme with pywal
-    wal -i "$WALLPAPER" --backend wal 
+# 4. Reload kitty colors
+pkill -USR1 kitty 2>/dev/null
 
-    # Export pywal colors to a Kitty config for persistence
-    #wal -n -o "$KITTY_CONFIG"
+# 5. Reload eww
+eww kill 2>/dev/null; sleep 0.3; eww daemon; sleep 0.3; eww open media_island
 
-    # Reload all running Kitty terminals
-    if command -v kitty &>/dev/null; then
-        kitty @ set-colors --all "$KITTY_CONFIG" 2>/dev/null || true
-    fi
-
-    # Wait 3 minutes
-    sleep 180
-done 
+echo "Wallpaper: $WP"

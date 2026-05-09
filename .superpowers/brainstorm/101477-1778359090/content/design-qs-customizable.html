@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Quick Settings — Customizable</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1a1b26; font-family: 'JetBrains Mono','Fira Mono',monospace;
+    color: #f8f8f2; min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+  }
+  .bar {
+    width: 100%; background: #282a36; display: flex; align-items: center;
+    justify-content: space-between; padding: 0 18px; height: 40px;
+    position: relative; border-bottom: 1px solid #44475a30;
+  }
+  .bar-left, .bar-right { display: flex; align-items: center; gap: 8px; }
+  .bar-btn {
+    background: #44475a; border-radius: 8px; padding: 4px 10px;
+    font-size: 12px; color: #f8f8f2; cursor: pointer; white-space: nowrap;
+    transition: background .15s; user-select: none; border: 1px solid transparent;
+  }
+  .bar-btn.active { background: #bd93f9; color: #282a36; font-weight: bold; }
+  .bar-btn.cyan { color: #8be9fd; }
+  .bar-btn.panel-open { background: #bd93f920; border-color: #bd93f960; color: #bd93f9; }
+
+  .notch-wrap {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    top: 0; display: flex; flex-direction: column; align-items: center; z-index: 5;
+  }
+  .notch-pill {
+    background: #11111b; border-radius: 0 0 28px 28px; padding: 0 48px; height: 40px;
+    display: flex; align-items: center; min-width: 260px; justify-content: center;
+    -webkit-mask-image: linear-gradient(to right,transparent 0%,black 18%,black 82%,transparent 100%);
+    mask-image: linear-gradient(to right,transparent 0%,black 18%,black 82%,transparent 100%);
+  }
+  .notch-time { font-size: 13px; font-weight: bold; color: #bd93f9; letter-spacing: 1px; }
+
+  /* ── PANELS (QS + Theme) ── */
+  .panel-anchor { position: absolute; top: 40px; z-index: 100; }
+  .panel-anchor.right { right: 18px; }
+  .panel-anchor.theme-anchor { right: 18px; }
+
+  .floating-panel {
+    background: #1e1f29; border: 1px solid #44475a40; border-radius: 16px;
+    overflow: hidden; max-height: 0; opacity: 0;
+    transition: max-height .35s cubic-bezier(.4,0,.2,1), opacity .2s;
+    box-shadow: 0 8px 32px #00000090; margin-top: 6px;
+  }
+  .floating-panel.open { max-height: 700px; opacity: 1; }
+  #qsPanel { width: 340px; }
+  #themePanel { width: 300px; }
+
+  .panel-inner { padding: 14px; }
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+  }
+  .panel-title { font-size: 11px; color: #6272a4; text-transform: uppercase; letter-spacing: 1px; }
+
+  .edit-btn {
+    font-size: 10px; padding: 3px 10px; border-radius: 6px; cursor: pointer;
+    border: 1px solid #44475a; color: #6272a4; background: transparent;
+    font-family: inherit; transition: all .15s;
+  }
+  .edit-btn:hover, .edit-btn.active { border-color: #bd93f9; color: #bd93f9; background: #bd93f915; }
+
+  /* tiles */
+  .qs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .qs-tile {
+    background: #282a36; border-radius: 12px; padding: 11px 13px;
+    cursor: pointer; transition: background .15s, transform .15s;
+    border: 1px solid transparent; user-select: none; position: relative;
+  }
+  .qs-tile:hover { background: #44475a; }
+  .qs-tile.on { background: #bd93f920; border-color: #bd93f960; }
+  .qs-tile.on .tile-name { color: #bd93f9; }
+  .tile-icon { font-size: 17px; margin-bottom: 5px; }
+  .tile-name { font-size: 11px; color: #f8f8f2; font-weight: bold; }
+  .tile-sub { font-size: 10px; color: #6272a4; margin-top: 1px; }
+  .remove-x {
+    position: absolute; top: -6px; right: -6px; width: 18px; height: 18px;
+    border-radius: 50%; background: #ff5555; color: #fff; font-size: 11px;
+    display: none; align-items: center; justify-content: center;
+    cursor: pointer; font-weight: bold; z-index: 2; transition: transform .1s;
+  }
+  .remove-x:hover { transform: scale(1.2); }
+  .editing .qs-tile { animation: wiggle .35s infinite alternate; border-style: dashed; border-color: #44475a; cursor: default; }
+  .editing .qs-tile:nth-child(even) { animation-delay: .17s; }
+  .editing .remove-x { display: flex; }
+  @keyframes wiggle { from { transform: rotate(-1.2deg); } to { transform: rotate(1.2deg); } }
+
+  .add-tile {
+    background: #282a36; border-radius: 12px; padding: 11px 13px;
+    border: 2px dashed #44475a; display: none; align-items: center;
+    justify-content: center; gap: 6px; cursor: pointer; color: #6272a4;
+    font-size: 11px; transition: border-color .15s, color .15s;
+  }
+  .add-tile:hover { border-color: #bd93f9; color: #bd93f9; }
+  .editing .add-tile { display: flex; }
+
+  /* ── ETHERNET EXPANDABLE ── */
+  .eth-wrap { border-radius: 12px; overflow: hidden; border: 1px solid transparent; transition: border-color .2s; margin-bottom: 8px; }
+  .eth-wrap.expanded { border-color: #8be9fd40; }
+  .eth-header {
+    background: #282a36; padding: 11px 13px; cursor: pointer;
+    display: flex; align-items: center; gap: 10px; transition: background .15s; user-select: none;
+  }
+  .eth-header:hover { background: #44475a; }
+  .eth-chevron { margin-left: auto; font-size: 10px; color: #6272a4; transition: transform .25s; }
+  .eth-wrap.expanded .eth-chevron { transform: rotate(180deg); }
+  .eth-status { font-size: 8px; padding: 2px 6px; border-radius: 4px; background: #50fa7b20; color: #50fa7b; font-weight: bold; margin-left: 4px; }
+  .eth-body { background: #11111b; max-height: 0; overflow: hidden; transition: max-height .35s cubic-bezier(.4,0,.2,1); }
+  .eth-wrap.expanded .eth-body { max-height: 600px; }
+  .eth-inner { padding: 8px; }
+  .conn-item {
+    border-radius: 10px; padding: 10px 12px; cursor: pointer;
+    border: 1px solid transparent; transition: all .15s; margin-bottom: 6px; background: #282a36;
+  }
+  .conn-item:hover { border-color: #44475a; }
+  .conn-item.active-conn { border-color: #8be9fd50; background: #8be9fd08; }
+  .conn-item.active-conn .conn-name { color: #8be9fd; }
+  .conn-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
+  .conn-name { font-size: 11px; font-weight: bold; color: #f8f8f2; }
+  .conn-ip { font-size: 10px; color: #6272a4; }
+  .conn-badge { font-size: 9px; padding: 1px 6px; border-radius: 4px; }
+  .badge-active { background: #50fa7b20; color: #50fa7b; }
+  .badge-saved { background: #44475a; color: #6272a4; }
+  .ip-editor { background: #1a1b26; border-radius: 8px; border: 1px solid #44475a30; overflow: hidden; max-height: 0; opacity: 0; transition: max-height .3s, opacity .2s; margin-top: 6px; }
+  .ip-editor.open { max-height: 400px; opacity: 1; }
+  .ip-inner { padding: 10px; }
+  .dhcp-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .dhcp-label { font-size: 11px; color: #f8f8f2; }
+  .tog { width: 34px; height: 18px; border-radius: 9px; background: #44475a; position: relative; cursor: pointer; transition: background .2s; flex-shrink: 0; }
+  .tog.on { background: #8be9fd; }
+  .tok { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #f8f8f2; transition: left .2s; }
+  .tog.on .tok { left: 18px; }
+  .fl { font-size: 9px; color: #6272a4; text-transform: uppercase; letter-spacing: .8px; margin: 8px 0 3px; }
+  .ip-inp {
+    width: 100%; background: #282a36; border: 1px solid #44475a; border-radius: 7px;
+    padding: 6px 9px; font-size: 11px; color: #f8f8f2; font-family: inherit; outline: none; transition: border-color .15s;
+  }
+  .ip-inp:focus { border-color: #8be9fd80; }
+  .ip-inp:disabled { opacity: .35; cursor: not-allowed; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .apply-btn {
+    width: 100%; margin-top: 10px; padding: 7px; border-radius: 7px;
+    background: #8be9fd15; border: 1px solid #8be9fd50; color: #8be9fd;
+    font-size: 10px; font-family: inherit; cursor: pointer; transition: all .15s;
+  }
+  .apply-btn:hover { background: #8be9fd25; }
+  .eth-add { display: flex; align-items: center; gap: 6px; padding: 7px 10px; color: #6272a4; font-size: 10px; cursor: pointer; border-radius: 8px; transition: color .15s, background .15s; }
+  .eth-add:hover { color: #8be9fd; background: #8be9fd08; }
+  .eth-divider { height: 1px; background: #44475a20; margin: 4px 0; }
+
+  /* widget picker */
+  .widget-picker {
+    background: #11111b; border-radius: 12px; overflow: hidden;
+    max-height: 0; opacity: 0; transition: max-height .3s, opacity .2s; margin-bottom: 10px;
+  }
+  .widget-picker.open { max-height: 260px; opacity: 1; }
+  .wp-inner { padding: 12px; }
+  .wp-label { font-size: 10px; color: #6272a4; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .wp-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
+  .wp-item {
+    background: #282a36; border-radius: 10px; padding: 10px 8px; text-align: center;
+    cursor: pointer; border: 1px solid transparent; transition: all .15s;
+  }
+  .wp-item:hover { border-color: #bd93f960; background: #44475a; }
+  .wp-item.added { opacity: .4; cursor: default; pointer-events: none; }
+  .wp-icon { font-size: 16px; margin-bottom: 3px; }
+  .wp-name { font-size: 10px; color: #f8f8f2; }
+
+  /* sliders */
+  .qs-slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .qs-slider-icon { font-size: 13px; color: #6272a4; width: 18px; text-align: center; }
+  .qs-slider {
+    flex: 1; -webkit-appearance: none; height: 4px; border-radius: 4px;
+    background: linear-gradient(to right,#bd93f9 45%,#44475a 45%); outline: none; cursor: pointer;
+  }
+  .qs-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: #bd93f9; cursor: pointer;
+  }
+  .qs-divider { height: 1px; background: #44475a30; margin: 10px 0; }
+
+  /* ── THEME PANEL ── */
+  .theme-grid { display: grid; gap: 10px; }
+  .theme-row {
+    border-radius: 12px; padding: 14px; cursor: pointer;
+    border: 2px solid transparent; transition: border-color .15s, transform .1s;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .theme-row:hover { transform: scale(1.02); }
+  .theme-row.selected { border-color: #f8f8f2; }
+  .theme-dots { display: flex; gap: 4px; }
+  .theme-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .theme-info { flex: 1; }
+  .theme-name { font-size: 12px; font-weight: bold; color: #f8f8f2; }
+  .theme-desc { font-size: 10px; color: rgba(255,255,255,.45); margin-top: 2px; }
+
+  .t-dracula { background: #282a36; }
+  .t-wisp { background: linear-gradient(135deg,#3a2545,#5f3e65); }
+  .t-shoegaze { background: linear-gradient(135deg,#111,#2a2a2a); }
+  .t-fawning {
+    background: linear-gradient(135deg,#060810,#0d1520);
+    position: relative; overflow: hidden;
+  }
+  .t-fawning::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, #c8ddf0 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 60% 20%, #e0eeff 0%, transparent 100%),
+      radial-gradient(1px 1px at 80% 60%, #a0c8e8 0%, transparent 100%),
+      radial-gradient(2px 2px at 35% 70%, #ddeeff 0%, transparent 100%),
+      radial-gradient(1px 1px at 75% 40%, #c0d8f0 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 15% 65%, #e8f4ff 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 85%, #b0cce0 0%, transparent 100%),
+      radial-gradient(2px 2px at 90% 15%, #d0e8ff 0%, transparent 100%);
+    opacity: .9;
+  }
+  .t-auto { background: linear-gradient(135deg,#1e1e2e,#313244); border: 1px dashed #44475a !important; }
+
+  .hint { padding: 20px; color: #6272a4; font-size: 12px; text-align: center; line-height: 1.8; }
+  strong { color: #bd93f9; font-weight: normal; }
+</style>
+</head>
+<body>
+
+<div class="bar" style="position:relative;">
+  <div class="bar-left">
+    <div class="bar-btn">🔍</div>
+    <div class="bar-btn">🔔</div>
+    <div class="bar-btn active">1</div>
+    <div class="bar-btn">2</div>
+    <div class="bar-btn">3</div>
+    <div class="bar-btn">4</div>
+    <div class="bar-btn">5</div>
+    <div class="bar-btn">6</div>
+    <div class="bar-btn">7</div>
+    <div class="bar-btn">8</div>
+  </div>
+
+  <div class="notch-wrap">
+    <div class="notch-pill">
+      <div class="notch-time" id="clock">11:44 PM</div>
+    </div>
+  </div>
+
+  <div class="bar-right">
+    <div class="bar-btn cyan">▲ Fibernet</div>
+    <div class="bar-btn">🔊 45%</div>
+    <div class="bar-btn" id="themeBtnBar" onclick="togglePanel('theme')">🎨 Theme</div>
+    <div class="bar-btn" id="qsBtnBar" onclick="togglePanel('qs')">⊞ Quick Settings</div>
+  </div>
+
+  <!-- QS panel -->
+  <div class="panel-anchor right" style="right:18px;">
+    <div class="floating-panel" id="qsPanel">
+      <div class="panel-inner">
+        <div class="panel-header">
+          <div class="panel-title">Quick Settings</div>
+          <button class="edit-btn" id="editBtn" onclick="toggleEdit()">Edit</button>
+        </div>
+        <div class="widget-picker" id="widgetPicker">
+          <div class="wp-inner">
+            <div class="wp-label">Add widget</div>
+            <div class="wp-grid" id="wpGrid"></div>
+          </div>
+        </div>
+        <div class="qs-grid editing" id="tileGrid"></div>
+        <div class="qs-slider-row">
+          <div class="qs-slider-icon">🔊</div>
+          <input class="qs-slider" type="range" min="0" max="100" value="45" oninput="syncSlider(this)">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Theme panel -->
+  <div class="panel-anchor" style="right:18px;">
+    <div class="floating-panel" id="themePanel">
+      <div class="panel-inner">
+        <div class="panel-header">
+          <div class="panel-title">Theme</div>
+        </div>
+        <div class="theme-grid" id="themeGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hint">
+  Click <strong>⊞ Quick Settings</strong> → <strong>Edit</strong> to add/remove widgets live<br>
+  Click <strong>🎨 Theme</strong> for the separate theme picker
+</div>
+
+<script>
+const WIDGETS = [
+  { id:'wifi',      icon:'📶', name:'Wi-Fi',       sub:'Fibernet-IA',    toggle:true,  on:true  },
+  { id:'bt',        icon:'✦',  name:'Bluetooth',   sub:'JBL Tune 720BT', toggle:true,  on:true  },
+  { id:'gpu',       icon:'🎮', name:'GPU Usage',   sub:'34% · RX 7900',  toggle:false, on:true  },
+  { id:'cpu',       icon:'⚡', name:'CPU',         sub:'12% · 7600X',    toggle:false, on:true  },
+  { id:'ram',       icon:'💾', name:'RAM',         sub:'8.5 / 30 GiB',   toggle:false, on:true  },
+  { id:'mic',       icon:'🎙', name:'Mic',         sub:'Input muted',     toggle:true,  on:false },
+  { id:'hypridle',  icon:'😴', name:'Idle Lock',   sub:'Auto-lock on',   toggle:true,  on:true  },
+  { id:'clipboard', icon:'📋', name:'Clipboard',   sub:'Last copied',    toggle:false, on:true  },
+  { id:'focustime', icon:'🎯', name:'Focus Time',  sub:'2h 14m today',   toggle:false, on:true  },
+  { id:'weather',   icon:'⛅', name:'Weather',     sub:'12.4°C',         toggle:false, on:true  },
+  { id:'updates',   icon:'🔄', name:'Updates',     sub:'System updates',  toggle:false, on:true  },
+  { id:'network',   icon:'📡', name:'Net Speed',   sub:'↑1.2 ↓4.8 MB/s', toggle:false, on:true  },
+];
+
+const THEMES = [
+  { id:'dracula',  cls:'t-dracula',  name:'Dracula',    desc:'Deep purple & pink — the classic',   dots:['#bd93f9','#ff79c6','#8be9fd'] },
+  { id:'wisp',     cls:'t-wisp',     name:'Wisp',       desc:'Dreamy mauve, lavender & blush',     dots:['#5f3e65','#c8adbe','#ddbdd1'] },
+  { id:'shoegaze', cls:'t-shoegaze', name:'Shoegaze',   desc:'Black, white & grain — washed out',  dots:['#0a0a0a','#888','#f0f0f0']   },
+  { id:'fawning',  cls:'t-fawning',  name:'Fawning',    desc:'Night sky, ice blue & silver sparks', dots:['#060810','#1e3a5a','#c8ddf0']  },
+  { id:'auto',     cls:'t-auto',     name:'Auto',       desc:'Generated from your wallpaper',      dots:['#44475a','#6272a4','#bd93f9'] },
+];
+
+let active = ['wifi','bt'];
+let editing = false;
+let pickerOpen = false;
+let openPanel = null;
+
+function w(id){ return WIDGETS.find(x=>x.id===id); }
+
+function makeTile(id) {
+  const data = w(id);
+  const tile = document.createElement('div');
+  tile.className = 'qs-tile' + (data.on ? ' on' : '');
+  tile.dataset.id = id;
+
+  const rx = document.createElement('div');
+  rx.className = 'remove-x';
+  rx.textContent = '✕';
+  rx.addEventListener('click', e => { e.stopPropagation(); removeTile(id); });
+
+  const ic = document.createElement('div');
+  ic.className = 'tile-icon';
+  ic.textContent = data.icon;
+
+  const nm = document.createElement('div');
+  nm.className = 'tile-name';
+  nm.textContent = data.name;
+
+  const sb = document.createElement('div');
+  sb.className = 'tile-sub';
+  sb.textContent = data.sub;
+
+  tile.append(rx, ic, nm, sb);
+  if (data.toggle) tile.addEventListener('click', () => { if (!editing) { data.on = !data.on; renderTiles(); } });
+  return tile;
+}
+
+function makeAddBtn() {
+  const btn = document.createElement('div');
+  btn.className = 'add-tile';
+  const plus = document.createElement('span');
+  plus.textContent = '＋';
+  plus.style.fontSize = '16px';
+  const lbl = document.createElement('span');
+  lbl.textContent = 'Add widget';
+  btn.append(plus, lbl);
+  btn.addEventListener('click', togglePicker);
+  return btn;
+}
+
+function renderTiles() {
+  const grid = document.getElementById('tileGrid');
+  grid.innerHTML = '';
+  active.forEach(id => grid.appendChild(makeTile(id)));
+  grid.appendChild(makeAddBtn());
+  grid.classList.toggle('editing', editing);
+}
+
+function renderPicker() {
+  const g = document.getElementById('wpGrid');
+  g.innerHTML = '';
+  WIDGETS.forEach(data => {
+    const item = document.createElement('div');
+    const isAdded = active.includes(data.id);
+    item.className = 'wp-item' + (isAdded ? ' added' : '');
+    const ic = document.createElement('div'); ic.className = 'wp-icon'; ic.textContent = data.icon;
+    const nm = document.createElement('div'); nm.className = 'wp-name'; nm.textContent = data.name;
+    item.append(ic, nm);
+    if (!isAdded) item.addEventListener('click', () => addTile(data.id));
+    g.appendChild(item);
+  });
+}
+
+function addTile(id) { if (!active.includes(id)) { active.push(id); renderTiles(); renderPicker(); } }
+function removeTile(id) { active = active.filter(x => x !== id); renderTiles(); renderPicker(); }
+
+function toggleEdit() {
+  editing = !editing;
+  const btn = document.getElementById('editBtn');
+  btn.classList.toggle('active', editing);
+  btn.textContent = editing ? 'Done' : 'Edit';
+  if (!editing) { pickerOpen = false; document.getElementById('widgetPicker').classList.remove('open'); }
+  renderTiles();
+}
+
+function togglePicker() {
+  pickerOpen = !pickerOpen;
+  document.getElementById('widgetPicker').classList.toggle('open', pickerOpen);
+  renderPicker();
+}
+
+function renderThemes() {
+  const g = document.getElementById('themeGrid');
+  g.innerHTML = '';
+  THEMES.forEach((t, i) => {
+    const row = document.createElement('div');
+    row.className = 'theme-row ' + t.cls + (i === 0 ? ' selected' : '');
+    row.addEventListener('click', () => {
+      document.querySelectorAll('.theme-row').forEach(r => r.classList.remove('selected'));
+      row.classList.add('selected');
+    });
+    const dots = document.createElement('div'); dots.className = 'theme-dots';
+    t.dots.forEach(c => { const d = document.createElement('div'); d.className = 'theme-dot'; d.style.background = c; dots.appendChild(d); });
+    const info = document.createElement('div'); info.className = 'theme-info';
+    const nm = document.createElement('div'); nm.className = 'theme-name'; nm.textContent = t.name;
+    const desc = document.createElement('div'); desc.className = 'theme-desc'; desc.textContent = t.desc;
+    info.append(nm, desc);
+    row.append(dots, info);
+    g.appendChild(row);
+  });
+}
+
+function togglePanel(which) {
+  const qs = document.getElementById('qsPanel');
+  const th = document.getElementById('themePanel');
+  const qsb = document.getElementById('qsBtnBar');
+  const thb = document.getElementById('themeBtnBar');
+
+  if (openPanel === which) {
+    openPanel = null;
+    qs.classList.remove('open'); th.classList.remove('open');
+    qsb.classList.remove('panel-open'); thb.classList.remove('panel-open');
+    return;
+  }
+  openPanel = which;
+  qs.classList.toggle('open', which === 'qs');
+  th.classList.toggle('open', which === 'theme');
+  qsb.classList.toggle('panel-open', which === 'qs');
+  thb.classList.toggle('panel-open', which === 'theme');
+  if (which !== 'qs') { editing = false; renderTiles(); }
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.panel-anchor') && !e.target.closest('#qsBtnBar') && !e.target.closest('#themeBtnBar')) {
+    if (openPanel) {
+      openPanel = null; editing = false;
+      document.getElementById('qsPanel').classList.remove('open');
+      document.getElementById('themePanel').classList.remove('open');
+      document.getElementById('qsBtnBar').classList.remove('panel-open');
+      document.getElementById('themeBtnBar').classList.remove('panel-open');
+      renderTiles();
+    }
+  }
+});
+
+function syncSlider(el) {
+  const p = el.value + '%';
+  el.style.background = 'linear-gradient(to right,#bd93f9 ' + p + ',#44475a ' + p + ')';
+}
+
+function tick() {
+  const now = new Date(); let h = now.getHours(), m = now.getMinutes();
+  const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
+  document.getElementById('clock').textContent = h + ':' + String(m).padStart(2,'0') + ' ' + ap;
+}
+tick(); setInterval(tick, 10000);
+
+renderTiles();
+renderThemes();
+</script>
+</body>
+</html>

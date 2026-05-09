@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Quick Settings + Themes</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1a1b26;
+    font-family: 'JetBrains Mono', 'Fira Mono', monospace;
+    color: #f8f8f2;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── BAR ── */
+  .bar {
+    width: 100%;
+    background: #282a36;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    height: 40px;
+    position: relative;
+    z-index: 10;
+    border-bottom: 1px solid #44475a30;
+  }
+  .bar-left, .bar-right { display: flex; align-items: center; gap: 8px; }
+  .bar-btn {
+    background: #44475a;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #f8f8f2;
+    cursor: pointer;
+    user-select: none;
+    transition: background .15s;
+    white-space: nowrap;
+  }
+  .bar-btn:hover { background: #6272a4; }
+  .bar-btn.active { background: #bd93f9; color: #282a36; font-weight: bold; }
+  .bar-btn.cyan { color: #8be9fd; }
+  .bar-btn.qs-btn {
+    background: #44475a;
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 12px;
+  }
+  .bar-btn.qs-btn.open { background: #bd93f920; border: 1px solid #bd93f960; color: #bd93f9; }
+
+  /* ── NOTCH ── */
+  .notch-wrap {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    top: 0; display: flex; flex-direction: column; align-items: center; z-index: 20;
+  }
+  .notch-pill {
+    background: #11111b;
+    border-radius: 0 0 28px 28px;
+    padding: 0 48px; height: 40px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer; white-space: nowrap; min-width: 340px; justify-content: center;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%);
+  }
+  .notch-time { font-size: 13px; font-weight: bold; color: #bd93f9; letter-spacing: 1px; }
+  .notch-media { display: flex; align-items: center; gap: 10px; }
+  .notch-art { width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg,#bd93f9,#ff79c6); flex-shrink:0; }
+  .notch-track { font-size: 11px; color: #f8f8f2; }
+  .notch-controls { display: flex; gap: 8px; color: #bd93f9; font-size: 13px; }
+
+  /* ── QUICK SETTINGS PANEL ── */
+  .qs-wrap {
+    position: absolute; right: 18px; top: 40px;
+    z-index: 100;
+    display: flex; flex-direction: column; align-items: flex-end;
+  }
+  .qs-panel {
+    background: #1e1f29;
+    border: 1px solid #44475a40;
+    border-radius: 16px;
+    width: 320px;
+    overflow: hidden;
+    max-height: 0; opacity: 0;
+    transition: max-height .35s cubic-bezier(.4,0,.2,1), opacity .2s;
+    box-shadow: 0 8px 32px #00000090;
+    margin-top: 6px;
+  }
+  .qs-panel.open { max-height: 600px; opacity: 1; }
+  .qs-inner { padding: 16px; }
+
+  /* Toggle grid */
+  .qs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .qs-grid:has(.qs-tile:only-child), .qs-grid-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .qs-tile {
+    background: #282a36;
+    border-radius: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: background .15s;
+    border: 1px solid transparent;
+    user-select: none;
+  }
+  .qs-tile:hover { background: #44475a; }
+  .qs-tile.on { background: #bd93f920; border-color: #bd93f960; }
+  .qs-tile-icon { font-size: 18px; margin-bottom: 6px; }
+  .qs-tile-name { font-size: 11px; color: #f8f8f2; font-weight: bold; }
+  .qs-tile-sub { font-size: 10px; color: #6272a4; margin-top: 2px; }
+  .qs-tile.on .qs-tile-name { color: #bd93f9; }
+
+  /* Sliders */
+  .qs-slider-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .qs-slider-icon { font-size: 14px; color: #6272a4; width: 20px; text-align: center; }
+  .qs-slider {
+    flex: 1; -webkit-appearance: none; appearance: none;
+    height: 4px; border-radius: 4px;
+    background: linear-gradient(to right, #bd93f9 45%, #44475a 45%);
+    outline: none; cursor: pointer;
+  }
+  .qs-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px;
+    border-radius: 50%; background: #bd93f9; cursor: pointer;
+  }
+
+  /* Divider */
+  .qs-divider { height: 1px; background: #44475a30; margin: 12px 0; }
+  .qs-section-label { font-size: 10px; color: #6272a4; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+
+  /* Theme picker */
+  .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .theme-swatch {
+    border-radius: 10px; padding: 10px 8px; cursor: pointer;
+    border: 2px solid transparent; text-align: center;
+    transition: border-color .15s, transform .1s;
+    user-select: none;
+  }
+  .theme-swatch:hover { transform: scale(1.04); }
+  .theme-swatch.selected { border-color: #f8f8f2; }
+  .theme-dots { display: flex; gap: 3px; justify-content: center; margin-bottom: 6px; }
+  .theme-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .theme-name { font-size: 10px; color: #f8f8f2; }
+  .theme-tag { font-size: 9px; color: rgba(255,255,255,.5); margin-top: 2px; }
+
+  /* Dracula swatch */
+  .swatch-dracula { background: #282a36; }
+  /* Wisp swatch */
+  .swatch-wisp { background: linear-gradient(135deg, #3a2545, #5f3e65); }
+  /* Auto swatch */
+  .swatch-auto { background: linear-gradient(135deg, #1e1e2e, #313244); border: 1px dashed #44475a; }
+
+  /* ── DEMO AREA ── */
+  .demo { padding: 32px 24px; width: 100%; max-width: 900px; }
+  .demo-title { font-size: 13px; color: #6272a4; margin-bottom: 16px; }
+  .wisp-preview {
+    border-radius: 12px;
+    padding: 20px;
+    background: linear-gradient(135deg, #2a1f33 0%, #3d2850 50%, #2e2040 100%);
+    border: 1px solid #a793b340;
+    margin-top: 20px;
+  }
+  .wisp-preview .wp-label { font-size: 10px; color: #a793b3; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .wisp-bar {
+    background: rgba(95,62,101,0.4);
+    border-radius: 8px; padding: 8px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    backdrop-filter: blur(8px); border: 1px solid #a793b330;
+    margin-bottom: 10px;
+  }
+  .wisp-pill {
+    background: rgba(42,18,56,0.7);
+    border-radius: 20px; padding: 5px 24px;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+    font-size: 11px; color: #ddbdd1; letter-spacing: 1px; font-weight: bold;
+  }
+  .wisp-chips { display: flex; gap: 6px; }
+  .wisp-chip {
+    background: rgba(167,147,179,0.2);
+    border: 1px solid #a793b340; border-radius: 6px;
+    padding: 3px 8px; font-size: 10px; color: #c8adbe;
+  }
+  .wisp-tile {
+    background: rgba(95,62,101,0.3);
+    border-radius: 10px; padding: 10px 12px;
+    border: 1px solid #a793b320; font-size: 11px; color: #ddbdd1;
+  }
+  .wisp-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+</style>
+</head>
+<body>
+
+<!-- BAR -->
+<div class="bar" style="position:relative;">
+  <div class="bar-left">
+    <div class="bar-btn">🔍</div>
+    <div class="bar-btn">🔔</div>
+    <div class="bar-btn active">1</div>
+    <div class="bar-btn">2</div>
+    <div class="bar-btn">3</div>
+    <div class="bar-btn">4</div>
+    <div class="bar-btn">5</div>
+    <div class="bar-btn">6</div>
+    <div class="bar-btn">7</div>
+    <div class="bar-btn">8</div>
+  </div>
+
+  <div class="notch-wrap">
+    <div class="notch-pill">
+      <div class="notch-time">11:44 PM</div>
+      <div class="notch-media">
+        <div style="color:#6272a4;font-size:11px;">·</div>
+        <div class="notch-art"></div>
+        <div class="notch-track">Jane! — The Long Faces</div>
+        <div class="notch-controls"><span>⏮</span><span>⏸</span><span>⏭</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT — no bluetooth chip, replaced by QS button -->
+  <div class="bar-right">
+    <div class="bar-btn cyan">▲ Fibernet</div>
+    <div class="bar-btn">🔊 45%</div>
+    <div class="bar-btn qs-btn" id="qsBtn" onclick="toggleQS()">
+      <span>⊞</span> <span style="font-size:11px;">Quick Settings</span>
+    </div>
+  </div>
+
+  <!-- QUICK SETTINGS PANEL — drops from top-right -->
+  <div class="qs-wrap">
+    <div class="qs-panel" id="qsPanel">
+      <div class="qs-inner">
+
+        <!-- Toggle tiles -->
+        <div class="qs-grid">
+          <div class="qs-tile on" onclick="this.classList.toggle('on')">
+            <div class="qs-tile-icon">📶</div>
+            <div class="qs-tile-name">Wi-Fi</div>
+            <div class="qs-tile-sub">Fibernet-IA</div>
+          </div>
+          <div class="qs-tile on" onclick="this.classList.toggle('on')">
+            <div class="qs-tile-icon">✦</div>
+            <div class="qs-tile-name">Bluetooth</div>
+            <div class="qs-tile-sub">JBL Tune 720BT</div>
+          </div>
+        </div>
+
+        <!-- Volume + brightness -->
+        <div class="qs-slider-row">
+          <div class="qs-slider-icon">🔊</div>
+          <input class="qs-slider" type="range" min="0" max="100" value="45" oninput="updateSlider(this)">
+        </div>
+
+        <div class="qs-divider"></div>
+
+        <!-- Theme picker -->
+        <div class="qs-section-label">Theme</div>
+        <div class="theme-grid">
+          <div class="theme-swatch swatch-dracula selected" onclick="selectTheme(this)">
+            <div class="theme-dots">
+              <div class="theme-dot" style="background:#bd93f9"></div>
+              <div class="theme-dot" style="background:#ff79c6"></div>
+              <div class="theme-dot" style="background:#8be9fd"></div>
+            </div>
+            <div class="theme-name">Dracula</div>
+          </div>
+          <div class="theme-swatch swatch-wisp" onclick="selectTheme(this)">
+            <div class="theme-dots">
+              <div class="theme-dot" style="background:#5f3e65"></div>
+              <div class="theme-dot" style="background:#c8adbe"></div>
+              <div class="theme-dot" style="background:#ddbdd1"></div>
+            </div>
+            <div class="theme-name">Wisp</div>
+            <div class="theme-tag">dreamy</div>
+          </div>
+          <div class="theme-swatch swatch-auto" onclick="selectTheme(this)">
+            <div class="theme-dots">
+              <div class="theme-dot" style="background:#44475a"></div>
+              <div class="theme-dot" style="background:#6272a4"></div>
+              <div class="theme-dot" style="background:#bd93f9"></div>
+            </div>
+            <div class="theme-name">Auto</div>
+            <div class="theme-tag">from wallpaper</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DEMO AREA -->
+<div class="demo">
+  <div class="demo-title">↑ Click "⊞ Quick Settings" to open panel — Bluetooth lives here now, with theme picker</div>
+
+  <!-- Wisp theme preview -->
+  <div class="wisp-preview">
+    <div class="wp-label">Wisp theme preview — dreamy mauve/lavender palette</div>
+    <div class="wisp-bar">
+      <div class="wisp-chips">
+        <div class="wisp-chip">🔍</div>
+        <div class="wisp-chip">🔔</div>
+        <div class="wisp-chip">1</div>
+        <div class="wisp-chip" style="background:rgba(167,147,179,0.4);color:#ddbdd1;">2</div>
+      </div>
+      <div class="wisp-pill">11:44 PM &nbsp;·&nbsp; Jane!</div>
+      <div class="wisp-chips">
+        <div class="wisp-chip">▲ Fiber</div>
+        <div class="wisp-chip">🔊 45%</div>
+        <div class="wisp-chip">⊞</div>
+      </div>
+    </div>
+    <div class="wisp-grid">
+      <div class="wisp-tile">📶 Wi-Fi<br><span style="color:#a793b3;font-size:9px;">Fibernet-IA</span></div>
+      <div class="wisp-tile">✦ BT<br><span style="color:#a793b3;font-size:9px;">JBL Tune</span></div>
+      <div class="wisp-tile">🔊 45%<br><span style="color:#a793b3;font-size:9px;">Volume</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let qsOpen = false;
+function toggleQS() {
+  qsOpen = !qsOpen;
+  document.getElementById('qsPanel').classList.toggle('open', qsOpen);
+  document.getElementById('qsBtn').classList.toggle('open', qsOpen);
+}
+function selectTheme(el) {
+  document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function updateSlider(el) {
+  const pct = el.value + '%';
+  el.style.background = `linear-gradient(to right, #bd93f9 ${pct}, #44475a ${pct})`;
+}
+// close on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('.qs-wrap') && !e.target.closest('#qsBtn') && qsOpen) {
+    qsOpen = false;
+    document.getElementById('qsPanel').classList.remove('open');
+    document.getElementById('qsBtn').classList.remove('open');
+  }
+});
+</script>
+</body>
+</html>
